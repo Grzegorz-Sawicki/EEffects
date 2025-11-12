@@ -21,7 +21,8 @@ NewProjectAudioProcessor::NewProjectAudioProcessor()
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
                        ),
-       parameters (*this, nullptr, "PARAMETERS", createParameterLayout())
+       parameters (*this, nullptr, "PARAMETERS", createParameterLayout()),
+	   reverb(parameters)
 #endif
 {
 }
@@ -121,10 +122,6 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     delayFeedbackSmoothed.reset (sampleRate, smoothingTimeSeconds);
     delayWetSmoothed.reset (sampleRate, smoothingTimeSeconds);
 
-    //auto inDb  = parameters.getRawParameterValue ("inputGain")->load();
-    //auto outDb = parameters.getRawParameterValue ("outputGain")->load();
-    //auto pan   = parameters.getRawParameterValue ("pan")->load();
-
     float delayMs     = parameters.getRawParameterValue ("delayTimeMs")->load();
     float delaySamples = delayMs * static_cast<float> (sampleRate) / 1000.0f;
     delayTimeSmoothed.setCurrentAndTargetValue (juce::jlimit (0.0f, maxDelaySeconds * static_cast<float> (sampleRate), delaySamples));
@@ -134,9 +131,6 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 
     reverb.reset();
     reverb.prepare (spec);
-
-    // Zarezerwuj tymczasowy bufor dla wet (kopii, na której wykona siê reverb)
-    reverbTempBuffer.setSize (getTotalNumOutputChannels(), samplesPerBlock);
 
     // Przygotuj delayLine (maksymalny rozmiar w próbkach) i skonfiguruj go dla kana³ów
     const int maxDelaySamples = static_cast<int> (std::ceil (maxDelaySeconds * sampleRate)) + 2;
@@ -255,51 +249,9 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         }
     }
 
-    // Ensure reverbTempBuffer has correct size/channels
-    if (reverbTempBuffer.getNumChannels() != totalNumOutputChannels
-        || reverbTempBuffer.getNumSamples() < numSamples)
-    {
-        reverbTempBuffer.setSize (totalNumOutputChannels, numSamples, false, true, true);
-    }
-
-    // Copy (post-delay) signal to temp buffer for reverb processing
-    for (int ch = 0; ch < totalNumOutputChannels; ++ch)
-        reverbTempBuffer.copyFrom (ch, 0, buffer, ch, 0, numSamples);
-
-    // Update reverb parameters and process wet signal
-    juce::dsp::Reverb::Parameters rvParams;
-    rvParams.roomSize = juce::jlimit (0.0f, 1.0f, reverbRoom);
-    rvParams.damping  = juce::jlimit (0.0f, 1.0f, reverbDamping);
-    rvParams.width    = juce::jlimit (0.0f, 1.0f, reverbWidth);
-    rvParams.wetLevel = 1.0f;
-    rvParams.dryLevel = 0.0f;
-    reverb.setParameters (rvParams);
-
-    // Process reverb in-place on temp buffer
-    {
-        juce::dsp::AudioBlock<float> block (const_cast<float**> (reverbTempBuffer.getArrayOfWritePointers()),
-                                           static_cast<size_t> (totalNumOutputChannels),
-                                           static_cast<size_t> (numSamples));
-
-        juce::dsp::ProcessContextReplacing<float> context (block);
-        reverb.process (context);
-    }
-
-    // Mix dry + wet (reverbWet param) into main buffer
-    const float wetR = juce::jlimit (0.0f, 1.0f, reverbWet);
-    const float dryR = 1.0f - wetR;
-
-    for (int ch = 0; ch < totalNumOutputChannels; ++ch)
-    {
-        auto* mainData = buffer.getWritePointer (ch);
-        auto* wetData  = reverbTempBuffer.getReadPointer (ch);
-
-        for (int i = 0; i < numSamples; ++i)
-            mainData[i] = mainData[i] * dryR + wetData[i] * wetR;
-    }
+    reverb.process(buffer);
 
     outputGainProcessor.setGainDecibels(outDb);
-
     {
         juce::dsp::AudioBlock<float> gainBlock(const_cast<float**>(buffer.getArrayOfWritePointers()),
             static_cast<size_t>(totalNumOutputChannels),

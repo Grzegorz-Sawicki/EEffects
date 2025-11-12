@@ -9,6 +9,8 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "Effect.h"
+#include "ReverbEffect.h"
 
 //==============================================================================
 /**
@@ -69,8 +71,8 @@ private:
     const float smoothingTimeSeconds = 0.02f;
 
     // Reverb
-    juce::dsp::Reverb reverb;
-    juce::AudioBuffer<float> reverbTempBuffer;
+    ReverbEffect reverb;
+    //juce::AudioBuffer<float> reverbTempBuffer;
 
     // Delay using juce::dsp::DelayLine (multi-channel supported internally)
     juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Linear> delayLine { 0 };
