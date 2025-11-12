@@ -22,7 +22,8 @@ NewProjectAudioProcessor::NewProjectAudioProcessor()
                      #endif
                        ),
        parameters (*this, nullptr, "PARAMETERS", createParameterLayout()),
-	   reverb(parameters)
+	   reverb(parameters),
+       delay(parameters, 1.0f)
 #endif
 {
 }
@@ -116,27 +117,11 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 	outputPanProcessor.setRule(juce::dsp::Panner<float>::Rule::balanced);
 	outputPanProcessor.setPan(parameters.getRawParameterValue("pan")->load());
 
-
-
-    delayTimeSmoothed.reset (sampleRate, smoothingTimeSeconds);
-    delayFeedbackSmoothed.reset (sampleRate, smoothingTimeSeconds);
-    delayWetSmoothed.reset (sampleRate, smoothingTimeSeconds);
-
-    float delayMs     = parameters.getRawParameterValue ("delayTimeMs")->load();
-    float delaySamples = delayMs * static_cast<float> (sampleRate) / 1000.0f;
-    delayTimeSmoothed.setCurrentAndTargetValue (juce::jlimit (0.0f, maxDelaySeconds * static_cast<float> (sampleRate), delaySamples));
-
-    delayFeedbackSmoothed.setCurrentAndTargetValue (parameters.getRawParameterValue ("delayFeedback")->load());
-    delayWetSmoothed.setCurrentAndTargetValue (parameters.getRawParameterValue ("delayWet")->load());
-
     reverb.reset();
     reverb.prepare (spec);
 
-    // Przygotuj delayLine (maksymalny rozmiar w próbkach) i skonfiguruj go dla kana³ów
-    const int maxDelaySamples = static_cast<int> (std::ceil (maxDelaySeconds * sampleRate)) + 2;
-    delayLine = decltype(delayLine) (maxDelaySamples); // utwórz DelayLine z maks. rozmiarem
-    delayLine.prepare (spec);
-    delayLine.reset();
+	delay.reset();
+	delay.prepare(spec);
 }
 
 void NewProjectAudioProcessor::releaseResources()
@@ -164,12 +149,6 @@ bool NewProjectAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts
 }
 #endif
 
-// linear interpolation helper (nadal dostêpny, ale DelayLine robi interpolacjê wewnêtrzn¹)
-static inline float linearInterpolate (float a, float b, float frac) noexcept
-{
-    return a + (b - a) * frac;
-}
-
 void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
@@ -179,35 +158,15 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // Pobierz nowe docelowe wartoœci parametrów (atomic safe)
     float inDb         = parameters.getRawParameterValue ("inputGain")->load();
     float outDb        = parameters.getRawParameterValue ("outputGain")->load();
     float pan          = parameters.getRawParameterValue ("pan")->load();
-
-    // Reverb params
-    float reverbWet     = parameters.getRawParameterValue ("reverbWet")->load();     // 0..1
-    float reverbRoom    = parameters.getRawParameterValue ("reverbRoom")->load();    // 0..1
-    float reverbDamping = parameters.getRawParameterValue ("reverbDamping")->load(); // 0..1
-    float reverbWidth   = parameters.getRawParameterValue ("reverbWidth")->load();   // 0..1
-
-    // Delay params
-    float delayMs       = parameters.getRawParameterValue ("delayTimeMs")->load();    // ms
-    float delayFeedback = parameters.getRawParameterValue ("delayFeedback")->load();  // 0..0.98
-    float delayWet      = parameters.getRawParameterValue ("delayWet")->load();       // 0..1
-
-    // Delay smoothing targets (delayTime in samples)
-    const float sr = static_cast<float> (getSampleRate());
-    const float delaySamplesTarget = juce::jlimit (0.0f, maxDelaySeconds * sr, delayMs * sr / 1000.0f);
-    delayTimeSmoothed.setTargetValue (delaySamplesTarget);
-    delayFeedbackSmoothed.setTargetValue (juce::jlimit (0.0f, 0.99f, delayFeedback));
-    delayWetSmoothed.setTargetValue (juce::jlimit (0.0f, 1.0f, delayWet));
 
     const int numSamples = buffer.getNumSamples();
 
 	inputGainProcessor.setGainDecibels(inDb);
 
 	{
-    // utwórz AudioBlock z aktualnych wskaŸników bufora (pewne i bezpoœrednie)
     juce::dsp::AudioBlock<float> gainBlock (const_cast<float**> (buffer.getArrayOfWritePointers()),
                                            static_cast<size_t> (totalNumOutputChannels),
                                            static_cast<size_t> (numSamples));
@@ -216,38 +175,7 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     inputGainProcessor.process (gainContext);
 	}
 
-    // 2) Delay: use juce::dsp::DelayLine (multi-channel). Sequence:
-    //    popSample(channel, delayInSamples, true) -> returns delayed sample
-    //    compute writeSample = in + delayedSample * feedback
-    //    pushSample(channel, writeSample)
-    for (int sample = 0; sample < numSamples; ++sample)
-    {
-        float delaySamples = delayTimeSmoothed.getNextValue();
-        float fb = delayFeedbackSmoothed.getNextValue();
-        float wet = delayWetSmoothed.getNextValue();
-        float dry = 1.0f - wet;
-
-        for (int ch = 0; ch < totalNumOutputChannels; ++ch)
-        {
-            float* channelData = buffer.getWritePointer (ch);
-            float inSample = channelData[sample];
-
-            // Pobierz próbkê opóŸnion¹ (DelayLine interpoluje wewnêtrznie)
-            float delayedSample = delayLine.popSample (ch, delaySamples, true);
-
-            // Mix dry + wet
-            float outSample = inSample * dry + delayedSample * wet;
-
-            // Feedback write value
-            float writeSample = inSample + delayedSample * fb;
-
-            // Zapisz do delay line
-            delayLine.pushSample (ch, writeSample);
-
-            // Zapisz wynik
-            channelData[sample] = outSample;
-        }
-    }
+	delay.process(buffer);
 
     reverb.process(buffer);
 

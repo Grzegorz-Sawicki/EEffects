@@ -11,6 +11,7 @@
 #include <JuceHeader.h>
 #include "Effect.h"
 #include "ReverbEffect.h"
+#include "DelayEffect.h"
 
 //==============================================================================
 /**
@@ -62,26 +63,14 @@ public:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
 private:
-    // Gain
     juce::dsp::Gain<float> inputGainProcessor;
 	juce::dsp::Gain<float> outputGainProcessor;
     juce::dsp::Panner<float> outputPanProcessor;
 
-    // Default ramp time (seconds)
     const float smoothingTimeSeconds = 0.02f;
 
-    // Reverb
     ReverbEffect reverb;
-    //juce::AudioBuffer<float> reverbTempBuffer;
-
-    // Delay using juce::dsp::DelayLine (multi-channel supported internally)
-    juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Linear> delayLine { 0 };
-    const float maxDelaySeconds = 2.0f; // maksymalny czas opóŸnienia (sekundy)
-
-    // Smoothed controls for delay (delay time in samples)
-    juce::SmoothedValue<float> delayTimeSmoothed;     // value = delay in samples
-    juce::SmoothedValue<float> delayFeedbackSmoothed;
-    juce::SmoothedValue<float> delayWetSmoothed;
+    DelayEffect delay;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NewProjectAudioProcessor)
