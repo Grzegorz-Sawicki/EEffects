@@ -67,6 +67,8 @@ public:
 private:
     const float smoothingTimeSeconds = 0.02f;
 
+	std::vector<IEffect*> effects;
+
     GainEffect inputGain;
 	GainEffect outputGain;
     PanEffect outputPan;

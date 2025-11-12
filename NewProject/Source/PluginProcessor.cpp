@@ -105,20 +105,20 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     spec.maximumBlockSize = static_cast<juce::uint32> (samplesPerBlock);
     spec.numChannels = static_cast<juce::uint32> (getTotalNumOutputChannels());
 
-	inputGain.reset();
-	inputGain.prepare(spec);
+    effects.clear();
+	effects.push_back(&inputGain);
+    effects.push_back(&reverb);
+    effects.push_back(&delay);
+	effects.push_back(&outputGain);
+	effects.push_back(&outputPan);
 
-	outputGain.reset();
-	outputGain.prepare(spec);
+    for each(IEffect* eff in effects)
+    {
+        (*eff).reset();
+		(*eff).prepare(spec);
+    }
+	
 
-	outputPan.reset();
-	outputPan.prepare(spec);
-
-    reverb.reset();
-    reverb.prepare (spec);
-
-	delay.reset();
-	delay.prepare(spec);
 }
 
 void NewProjectAudioProcessor::releaseResources()
@@ -157,11 +157,10 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
     const int numSamples = buffer.getNumSamples();
 
-    inputGain.process(buffer);
-	delay.process(buffer);
-    reverb.process(buffer);
-	outputGain.process(buffer);
-	outputPan.process(buffer);
+    for each(IEffect* eff in effects)
+    {
+        (*eff).process(buffer);
+	}
 }
 
 //==============================================================================
