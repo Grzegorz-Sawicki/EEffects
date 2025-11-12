@@ -60,10 +60,10 @@ public:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
 private:
-    // Smoothed values for parameters (per-sample interpolation)
-    juce::SmoothedValue<float> inputGainSmoothed;
-    juce::SmoothedValue<float> outputGainSmoothed;
-    juce::SmoothedValue<float> panSmoothed;
+    // Gain
+    juce::dsp::Gain<float> inputGainProcessor;
+	juce::dsp::Gain<float> outputGainProcessor;
+    juce::dsp::Panner<float> outputPanProcessor;
 
     // Default ramp time (seconds)
     const float smoothingTimeSeconds = 0.02f;

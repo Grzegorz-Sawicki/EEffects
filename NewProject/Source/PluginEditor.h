@@ -29,7 +29,6 @@ private:
     // access the processor object that created it.
     NewProjectAudioProcessor& audioProcessor;
 
-    // Core controls
     juce::Slider inputGainSlider;
     juce::Slider panSlider;
     juce::Slider outputGainSlider;
@@ -38,7 +37,6 @@ private:
     juce::Label panLabel;
     juce::Label outputLabel;
 
-    // Reverb controls
     juce::Slider reverbWetSlider;
     juce::Slider reverbRoomSlider;
     juce::Slider reverbDampingSlider;
@@ -49,7 +47,6 @@ private:
     juce::Label reverbDampingLabel;
     juce::Label reverbWidthLabel;
 
-    // Delay controls (added)
     juce::Slider delayTimeSlider;
     juce::Slider delayFeedbackSlider;
     juce::Slider delayWetSlider;
@@ -68,7 +65,6 @@ private:
     std::unique_ptr<Attachment> reverbDampingAttach;
     std::unique_ptr<Attachment> reverbWidthAttach;
 
-    // Delay attachments
     std::unique_ptr<Attachment> delayTimeAttach;
     std::unique_ptr<Attachment> delayFeedbackAttach;
     std::unique_ptr<Attachment> delayWetAttach;

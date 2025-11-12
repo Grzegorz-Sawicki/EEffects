@@ -95,37 +95,42 @@ void NewProjectAudioProcessor::changeProgramName (int index, const juce::String&
 //==============================================================================
 void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Przygotuj wyg³adzacze
-    inputGainSmoothed.reset (sampleRate, smoothingTimeSeconds);
-    outputGainSmoothed.reset (sampleRate, smoothingTimeSeconds);
-    panSmoothed.reset (sampleRate, smoothingTimeSeconds);
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = static_cast<juce::uint32> (samplesPerBlock);
+    spec.numChannels = static_cast<juce::uint32> (getTotalNumOutputChannels());
+
+    inputGainProcessor.reset();
+    inputGainProcessor.prepare (spec);
+    inputGainProcessor.setRampDurationSeconds (smoothingTimeSeconds);
+    inputGainProcessor.setGainDecibels (parameters.getRawParameterValue ("inputGain")->load());
+
+	outputGainProcessor.reset();
+	outputGainProcessor.prepare(spec);
+	outputGainProcessor.setRampDurationSeconds(smoothingTimeSeconds);
+	outputGainProcessor.setGainDecibels(parameters.getRawParameterValue("outputGain")->load());
+
+    outputPanProcessor.reset();
+	outputPanProcessor.prepare(spec);
+	outputPanProcessor.setRule(juce::dsp::Panner<float>::Rule::balanced);
+	outputPanProcessor.setPan(parameters.getRawParameterValue("pan")->load());
+
+
 
     delayTimeSmoothed.reset (sampleRate, smoothingTimeSeconds);
     delayFeedbackSmoothed.reset (sampleRate, smoothingTimeSeconds);
     delayWetSmoothed.reset (sampleRate, smoothingTimeSeconds);
 
-    // Inicjuj smoothedValue startowe wartoœci (konwersje)
-    auto inDb  = parameters.getRawParameterValue ("inputGain")->load();
-    auto outDb = parameters.getRawParameterValue ("outputGain")->load();
-    auto pan   = parameters.getRawParameterValue ("pan")->load();
+    //auto inDb  = parameters.getRawParameterValue ("inputGain")->load();
+    //auto outDb = parameters.getRawParameterValue ("outputGain")->load();
+    //auto pan   = parameters.getRawParameterValue ("pan")->load();
 
-    inputGainSmoothed.setCurrentAndTargetValue (juce::Decibels::decibelsToGain (inDb));
-    outputGainSmoothed.setCurrentAndTargetValue (juce::Decibels::decibelsToGain (outDb));
-    panSmoothed.setCurrentAndTargetValue (pan);
-
-    // Delay initial values
     float delayMs     = parameters.getRawParameterValue ("delayTimeMs")->load();
     float delaySamples = delayMs * static_cast<float> (sampleRate) / 1000.0f;
     delayTimeSmoothed.setCurrentAndTargetValue (juce::jlimit (0.0f, maxDelaySeconds * static_cast<float> (sampleRate), delaySamples));
 
     delayFeedbackSmoothed.setCurrentAndTargetValue (parameters.getRawParameterValue ("delayFeedback")->load());
     delayWetSmoothed.setCurrentAndTargetValue (parameters.getRawParameterValue ("delayWet")->load());
-
-    // Przygotuj reverb (dsp::ProcessSpec)
-    juce::dsp::ProcessSpec spec;
-    spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = static_cast<juce::uint32> (samplesPerBlock);
-    spec.numChannels = static_cast<juce::uint32> (getTotalNumOutputChannels());
 
     reverb.reset();
     reverb.prepare (spec);
@@ -183,7 +188,7 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     // Pobierz nowe docelowe wartoœci parametrów (atomic safe)
     float inDb         = parameters.getRawParameterValue ("inputGain")->load();
     float outDb        = parameters.getRawParameterValue ("outputGain")->load();
-    float panTarget    = parameters.getRawParameterValue ("pan")->load();
+    float pan          = parameters.getRawParameterValue ("pan")->load();
 
     // Reverb params
     float reverbWet     = parameters.getRawParameterValue ("reverbWet")->load();     // 0..1
@@ -196,11 +201,6 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     float delayFeedback = parameters.getRawParameterValue ("delayFeedback")->load();  // 0..0.98
     float delayWet      = parameters.getRawParameterValue ("delayWet")->load();       // 0..1
 
-    // Ustaw cele wyg³adzaczy (zrobione raz na blok)
-    inputGainSmoothed.setTargetValue (juce::Decibels::decibelsToGain (inDb));
-    outputGainSmoothed.setTargetValue (juce::Decibels::decibelsToGain (outDb));
-    panSmoothed.setTargetValue (panTarget);
-
     // Delay smoothing targets (delayTime in samples)
     const float sr = static_cast<float> (getSampleRate());
     const float delaySamplesTarget = juce::jlimit (0.0f, maxDelaySeconds * sr, delayMs * sr / 1000.0f);
@@ -210,31 +210,17 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
     const int numSamples = buffer.getNumSamples();
 
-    // 1) Pass: apply input gain + pan (no output gain yet). Smoothed per-sample.
-    for (int sample = 0; sample < numSamples; ++sample)
-    {
-        float inGain = inputGainSmoothed.getNextValue();
-        float pan = panSmoothed.getNextValue();
+	inputGainProcessor.setGainDecibels(inDb);
 
-        float angle = (pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f; // -1..1 -> 0..pi/2
-        float panLeft  = std::cos (angle);
-        float panRight = std::sin (angle);
+	{
+    // utwórz AudioBlock z aktualnych wskaŸników bufora (pewne i bezpoœrednie)
+    juce::dsp::AudioBlock<float> gainBlock (const_cast<float**> (buffer.getArrayOfWritePointers()),
+                                           static_cast<size_t> (totalNumOutputChannels),
+                                           static_cast<size_t> (numSamples));
 
-        for (int channel = 0; channel < totalNumOutputChannels; ++channel)
-        {
-            auto* channelData = buffer.getWritePointer (channel);
-            float panGain = 1.0f;
-
-            if (totalNumOutputChannels >= 2)
-            {
-                if (channel == 0) panGain = panLeft;
-                else if (channel == 1) panGain = panRight;
-                else panGain = 1.0f;
-            }
-
-            channelData[sample] *= (inGain * panGain);
-        }
-    }
+    juce::dsp::ProcessContextReplacing<float> gainContext (gainBlock);
+    inputGainProcessor.process (gainContext);
+	}
 
     // 2) Delay: use juce::dsp::DelayLine (multi-channel). Sequence:
     //    popSample(channel, delayInSamples, true) -> returns delayed sample
@@ -312,17 +298,25 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             mainData[i] = mainData[i] * dryR + wetData[i] * wetR;
     }
 
-    // Final pass: apply output gain (smoothed) per-sample
-    for (int sample = 0; sample < numSamples; ++sample)
-    {
-        float outGain = outputGainSmoothed.getNextValue();
+    outputGainProcessor.setGainDecibels(outDb);
 
-        for (int channel = 0; channel < totalNumOutputChannels; ++channel)
-        {
-            auto* channelData = buffer.getWritePointer (channel);
-            channelData[sample] *= outGain;
-        }
+    {
+        juce::dsp::AudioBlock<float> gainBlock(const_cast<float**>(buffer.getArrayOfWritePointers()),
+            static_cast<size_t>(totalNumOutputChannels),
+            static_cast<size_t>(numSamples));
+
+        juce::dsp::ProcessContextReplacing<float> gainContext(gainBlock);
+        outputGainProcessor.process(gainContext);
     }
+
+    outputPanProcessor.setPan(pan);
+    {
+        juce::dsp::AudioBlock<float> panBlock(const_cast<float**>(buffer.getArrayOfWritePointers()),
+            static_cast<size_t>(totalNumOutputChannels),
+            static_cast<size_t>(numSamples));
+        juce::dsp::ProcessContextReplacing<float> panContext(panBlock);
+        outputPanProcessor.process(panContext);
+	}
 }
 
 //==============================================================================

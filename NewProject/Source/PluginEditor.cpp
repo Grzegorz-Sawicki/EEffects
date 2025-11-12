@@ -13,7 +13,6 @@
 NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
-    // Common slider setup lambda
     auto setupSlider = [this] (juce::Slider& s)
     {
         s.setSliderStyle (juce::Slider::RotaryVerticalDrag);
@@ -22,7 +21,6 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
         addAndMakeVisible (s);
     };
 
-    // Core controls
     setupSlider (inputGainSlider);
     setupSlider (panSlider);
     setupSlider (outputGainSlider);
@@ -41,8 +39,7 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     outputLabel.attachToComponent (&outputGainSlider, false);
     outputLabel.setWantsKeyboardFocus (false);
     addAndMakeVisible (outputLabel);
-
-    // Reverb controls
+    
     setupSlider (reverbWetSlider);
     setupSlider (reverbRoomSlider);
     setupSlider (reverbDampingSlider);
@@ -68,7 +65,6 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     reverbWidthLabel.setWantsKeyboardFocus (false);
     addAndMakeVisible (reverbWidthLabel);
 
-    // Delay controls (new, placed below reverb)
     setupSlider (delayTimeSlider);
     setupSlider (delayFeedbackSlider);
     setupSlider (delayWetSlider);
@@ -88,7 +84,6 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     delayWetLabel.setWantsKeyboardFocus (false);
     addAndMakeVisible (delayWetLabel);
 
-    // Attachments (bind sliders to APVTS parameters)
     inputAttach  = std::make_unique<Attachment> (audioProcessor.parameters, "inputGain",  inputGainSlider);
     panAttach    = std::make_unique<Attachment> (audioProcessor.parameters, "pan",        panSlider);
     outputAttach = std::make_unique<Attachment> (audioProcessor.parameters, "outputGain", outputGainSlider);
@@ -98,12 +93,10 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     reverbDampingAttach = std::make_unique<Attachment> (audioProcessor.parameters, "reverbDamping", reverbDampingSlider);
     reverbWidthAttach   = std::make_unique<Attachment> (audioProcessor.parameters, "reverbWidth",   reverbWidthSlider);
 
-    // Delay attachments
     delayTimeAttach     = std::make_unique<Attachment> (audioProcessor.parameters, "delayTimeMs",   delayTimeSlider);
     delayFeedbackAttach = std::make_unique<Attachment> (audioProcessor.parameters, "delayFeedback", delayFeedbackSlider);
     delayWetAttach      = std::make_unique<Attachment> (audioProcessor.parameters, "delayWet",      delayWetSlider);
 
-    // Increase editor height to fit additional controls
     setSize (400, 480);
 }
 
@@ -124,29 +117,22 @@ void NewProjectAudioProcessorEditor::resized()
 {
     auto area = getLocalBounds().reduced (12);
 
-    // Divide editor area into three horizontal rows:
-    //  - topRow: core controls (3)
-    //  - midRow: reverb controls (4)
-    //  - bottomRow: delay controls (3)
     int rowHeight = area.getHeight() / 3;
     auto topRow = area.removeFromTop (rowHeight);
     auto midRow = area.removeFromTop (rowHeight);
-    auto bottomRow = area; // remaining
+    auto bottomRow = area;
 
-    // Top row: 3 controls
     int wTop = topRow.getWidth() / 3;
     inputGainSlider.setBounds (topRow.removeFromLeft (wTop).reduced (8));
     panSlider.setBounds (topRow.removeFromLeft (wTop).reduced (8));
     outputGainSlider.setBounds (topRow.reduced (8));
 
-    // Mid row: 4 reverb sliders
     int wMid = midRow.getWidth() / 4;
     reverbWetSlider.setBounds     (midRow.removeFromLeft (wMid).reduced (8));
     reverbRoomSlider.setBounds    (midRow.removeFromLeft (wMid).reduced (8));
     reverbDampingSlider.setBounds (midRow.removeFromLeft (wMid).reduced (8));
     reverbWidthSlider.setBounds   (midRow.reduced (8));
 
-    // Bottom row: 3 delay sliders
     int wBot = bottomRow.getWidth() / 3;
     delayTimeSlider.setBounds     (bottomRow.removeFromLeft (wBot).reduced (8));
     delayFeedbackSlider.setBounds (bottomRow.removeFromLeft (wBot).reduced (8));
