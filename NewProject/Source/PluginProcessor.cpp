@@ -23,7 +23,10 @@ NewProjectAudioProcessor::NewProjectAudioProcessor()
                        ),
        parameters (*this, nullptr, "PARAMETERS", createParameterLayout()),
 	   reverb(parameters),
-       delay(parameters, 1.0f)
+       delay(parameters, 1.0f),
+	inputGain(parameters),
+	outputGain(parameters, "outputGain"),
+	outputPan(parameters)
 #endif
 {
 }
@@ -102,20 +105,14 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     spec.maximumBlockSize = static_cast<juce::uint32> (samplesPerBlock);
     spec.numChannels = static_cast<juce::uint32> (getTotalNumOutputChannels());
 
-    inputGainProcessor.reset();
-    inputGainProcessor.prepare (spec);
-    inputGainProcessor.setRampDurationSeconds (smoothingTimeSeconds);
-    inputGainProcessor.setGainDecibels (parameters.getRawParameterValue ("inputGain")->load());
+	inputGain.reset();
+	inputGain.prepare(spec);
 
-	outputGainProcessor.reset();
-	outputGainProcessor.prepare(spec);
-	outputGainProcessor.setRampDurationSeconds(smoothingTimeSeconds);
-	outputGainProcessor.setGainDecibels(parameters.getRawParameterValue("outputGain")->load());
+	outputGain.reset();
+	outputGain.prepare(spec);
 
-    outputPanProcessor.reset();
-	outputPanProcessor.prepare(spec);
-	outputPanProcessor.setRule(juce::dsp::Panner<float>::Rule::balanced);
-	outputPanProcessor.setPan(parameters.getRawParameterValue("pan")->load());
+	outputPan.reset();
+	outputPan.prepare(spec);
 
     reverb.reset();
     reverb.prepare (spec);
@@ -158,45 +155,13 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    float inDb         = parameters.getRawParameterValue ("inputGain")->load();
-    float outDb        = parameters.getRawParameterValue ("outputGain")->load();
-    float pan          = parameters.getRawParameterValue ("pan")->load();
-
     const int numSamples = buffer.getNumSamples();
 
-	inputGainProcessor.setGainDecibels(inDb);
-
-	{
-    juce::dsp::AudioBlock<float> gainBlock (const_cast<float**> (buffer.getArrayOfWritePointers()),
-                                           static_cast<size_t> (totalNumOutputChannels),
-                                           static_cast<size_t> (numSamples));
-
-    juce::dsp::ProcessContextReplacing<float> gainContext (gainBlock);
-    inputGainProcessor.process (gainContext);
-	}
-
+    inputGain.process(buffer);
 	delay.process(buffer);
-
     reverb.process(buffer);
-
-    outputGainProcessor.setGainDecibels(outDb);
-    {
-        juce::dsp::AudioBlock<float> gainBlock(const_cast<float**>(buffer.getArrayOfWritePointers()),
-            static_cast<size_t>(totalNumOutputChannels),
-            static_cast<size_t>(numSamples));
-
-        juce::dsp::ProcessContextReplacing<float> gainContext(gainBlock);
-        outputGainProcessor.process(gainContext);
-    }
-
-    outputPanProcessor.setPan(pan);
-    {
-        juce::dsp::AudioBlock<float> panBlock(const_cast<float**>(buffer.getArrayOfWritePointers()),
-            static_cast<size_t>(totalNumOutputChannels),
-            static_cast<size_t>(numSamples));
-        juce::dsp::ProcessContextReplacing<float> panContext(panBlock);
-        outputPanProcessor.process(panContext);
-	}
+	outputGain.process(buffer);
+	outputPan.process(buffer);
 }
 
 //==============================================================================

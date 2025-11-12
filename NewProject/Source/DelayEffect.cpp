@@ -13,12 +13,10 @@ void DelayEffect::prepare (const juce::dsp::ProcessSpec& spec)
     delayLine.prepare (spec);
     delayLine.reset();
 
-    // Reset smoothing generators
     delayTimeSmoothed.reset (spec.sampleRate, smoothingTimeSeconds);
     delayFeedbackSmoothed.reset (spec.sampleRate, smoothingTimeSeconds);
     delayWetSmoothed.reset (spec.sampleRate, smoothingTimeSeconds);
 
-    // Initialize current and target values from parameters
     const float delayMs = *parameters.getRawParameterValue ("delayTimeMs");
     const float sr = static_cast<float> (spec.sampleRate);
     const float delaySamples = juce::jlimit (0.0f, maxDelaySeconds * sr, delayMs * sr * 0.001f);
@@ -52,7 +50,6 @@ void DelayEffect::process (juce::AudioBuffer<float>& buffer)
     const int numSamples  = buffer.getNumSamples();
     const float sr = static_cast<float> (lastSpec.sampleRate);
 
-    // Read parameter atomically once per block and set smoothing targets
     const float delayMsParam = *parameters.getRawParameterValue ("delayTimeMs");
     const float targetDelaySamples = juce::jlimit (0.0f, maxDelaySeconds * sr, delayMsParam * sr * 0.001f);
     delayTimeSmoothed.setTargetValue (targetDelaySamples);
@@ -63,7 +60,6 @@ void DelayEffect::process (juce::AudioBuffer<float>& buffer)
     const float wetParam = *parameters.getRawParameterValue ("delayWet");
     delayWetSmoothed.setTargetValue (juce::jlimit (0.0f, 1.0f, wetParam));
 
-    // Per-sample processing using smoothed values
     for (int i = 0; i < numSamples; ++i)
     {
         const float delaySamples = delayTimeSmoothed.getNextValue();
@@ -76,7 +72,6 @@ void DelayEffect::process (juce::AudioBuffer<float>& buffer)
             auto* ptr = buffer.getWritePointer (ch);
             const float inSample = ptr[i];
 
-            // read delayed sample (DelayLine does internal interpolation)
             const float delayed = delayLine.popSample (ch, delaySamples, true);
 
             const float outSample = inSample * dry + delayed * wet;

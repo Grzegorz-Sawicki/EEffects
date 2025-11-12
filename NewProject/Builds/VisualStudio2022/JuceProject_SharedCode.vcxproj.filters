@@ -3525,6 +3525,12 @@
     <ClCompile Include="..\..\Source\DelayEffect.cpp">
       <Filter>JuceProject\Source\Effects</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\GainEffect.cpp">
+      <Filter>JuceProject\Source\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\PanEffect.cpp">
+      <Filter>JuceProject\Source\Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\PluginProcessor.h">
@@ -7599,6 +7605,12 @@
       <Filter>JuceProject\Source\Effects</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\DelayEffect.h">
+      <Filter>JuceProject\Source\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\GainEffect.h">
+      <Filter>JuceProject\Source\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\PanEffect.h">
       <Filter>JuceProject\Source\Effects</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,9 +20,8 @@ private:
     juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Linear> delayLine { 0 };
     juce::dsp::ProcessSpec lastSpec{};
 
-    // Smoothing
     const float smoothingTimeSeconds = 0.02f;
-    juce::SmoothedValue<float> delayTimeSmoothed;     // delay in samples
-    juce::SmoothedValue<float> delayFeedbackSmoothed; // feedback 0..1
-    juce::SmoothedValue<float> delayWetSmoothed;      // wet 0..1
+    juce::SmoothedValue<float> delayTimeSmoothed;     
+    juce::SmoothedValue<float> delayFeedbackSmoothed; 
+    juce::SmoothedValue<float> delayWetSmoothed;    
 };

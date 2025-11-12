@@ -138,6 +138,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\DelayEffect.cpp" />
+    <ClCompile Include="..\..\Source\GainEffect.cpp" />
+    <ClCompile Include="..\..\Source\PanEffect.cpp" />
     <ClCompile Include="..\..\Source\PluginProcessor.cpp" />
     <ClCompile Include="..\..\Source\PluginEditor.cpp" />
     <ClCompile Include="..\..\..\..\..\..\..\JUCE\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.cpp">
@@ -2946,6 +2948,8 @@
   <ItemGroup>
     <ClInclude Include="..\..\Source\DelayEffect.h" />
     <ClInclude Include="..\..\Source\Effect.h" />
+    <ClInclude Include="..\..\Source\GainEffect.h" />
+    <ClInclude Include="..\..\Source\PanEffect.h" />
     <ClInclude Include="..\..\Source\PluginProcessor.h" />
     <ClInclude Include="..\..\Source\PluginEditor.h" />
     <ClInclude Include="..\..\..\..\..\..\..\JUCE\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.h" />

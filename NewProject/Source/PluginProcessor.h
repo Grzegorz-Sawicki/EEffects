@@ -12,6 +12,8 @@
 #include "Effect.h"
 #include "ReverbEffect.h"
 #include "DelayEffect.h"
+#include "GainEffect.h"
+#include "PanEffect.h"
 
 //==============================================================================
 /**
@@ -63,12 +65,11 @@ public:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
 private:
-    juce::dsp::Gain<float> inputGainProcessor;
-	juce::dsp::Gain<float> outputGainProcessor;
-    juce::dsp::Panner<float> outputPanProcessor;
-
     const float smoothingTimeSeconds = 0.02f;
 
+    GainEffect inputGain;
+	GainEffect outputGain;
+    PanEffect outputPan;
     ReverbEffect reverb;
     DelayEffect delay;
 
