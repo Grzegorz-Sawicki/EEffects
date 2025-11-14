@@ -16,7 +16,11 @@ public:
 private:
     juce::Slider timeSlider, feedbackSlider, wetSlider;
     juce::Label timeLabel, feedbackLabel, wetLabel;
+	juce::ToggleButton bypassButton;
 
-    using Attachment = juce::AudioProcessorValueTreeState::SliderAttachment;
-    std::unique_ptr<Attachment> timeAttach, feedbackAttach, wetAttach;
+    using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+    std::unique_ptr<SliderAttachment> timeAttach, feedbackAttach, wetAttach;
+
+    using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
+    std::unique_ptr<ButtonAttachment> bypassAttach;
 };

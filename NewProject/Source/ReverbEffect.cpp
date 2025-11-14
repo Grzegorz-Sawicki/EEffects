@@ -21,6 +21,12 @@ void ReverbEffect::reset()
 
 void ReverbEffect::process(juce::AudioBuffer<float>& buffer)
 {
+    const bool bypass = *parameters.getRawParameterValue("reverbBypass");
+    if (bypass)
+        setActive(false);
+    else
+        setActive(true);
+
     if (!isActive())
         return;
 

@@ -32,10 +32,17 @@ ReverbUI::ReverbUI(juce::AudioProcessorValueTreeState& vts)
     widthLabel.attachToComponent(&widthSlider, false);
     addAndMakeVisible(widthLabel);
 
-    wetAttach = std::make_unique<Attachment>(parameters, "reverbWet", wetSlider);
-    roomAttach = std::make_unique<Attachment>(parameters, "reverbRoom", roomSlider);
-    dampingAttach = std::make_unique<Attachment>(parameters, "reverbDamping", dampingSlider);
-    widthAttach = std::make_unique<Attachment>(parameters, "reverbWidth", widthSlider);
+
+    bypassButton.setButtonText("Bypass");
+    bypassButton.setColour(juce::ToggleButton::tickColourId, juce::Colours::white);
+    bypassButton.setWantsKeyboardFocus(false);
+    addAndMakeVisible(bypassButton);
+
+    wetAttach = std::make_unique<SliderAttachment>(parameters, "reverbWet", wetSlider);
+    roomAttach = std::make_unique<SliderAttachment>(parameters, "reverbRoom", roomSlider);
+    dampingAttach = std::make_unique<SliderAttachment>(parameters, "reverbDamping", dampingSlider);
+    widthAttach = std::make_unique<SliderAttachment>(parameters, "reverbWidth", widthSlider);
+	bypassAttach = std::make_unique<ButtonAttachment>(parameters, "reverbBypass", bypassButton);
 }
 
 void ReverbUI::paint(juce::Graphics& g)
@@ -45,10 +52,17 @@ void ReverbUI::paint(juce::Graphics& g)
 
 void ReverbUI::resized()
 {
-    auto r = getLocalBounds().reduced(6);
+    auto r = getLocalBounds().reduced (6);
+
+    // reserve a small top area for the bypass button
+    const int btnH = 24;
+    auto topArea = r.removeFromTop (btnH + 4);
+    const int btnW = 90;
+    bypassButton.setBounds (topArea.removeFromRight (btnW).reduced (2));
+
     int w = r.getWidth() / 4;
-    wetSlider.setBounds(r.removeFromLeft(w).reduced(6));
-    roomSlider.setBounds(r.removeFromLeft(w).reduced(6));
-    dampingSlider.setBounds(r.removeFromLeft(w).reduced(6));
-    widthSlider.setBounds(r.reduced(6));
+    wetSlider.setBounds     (r.removeFromLeft (w).reduced (6));
+    roomSlider.setBounds    (r.removeFromLeft (w).reduced (6));
+    dampingSlider.setBounds (r.removeFromLeft (w).reduced (6));
+    widthSlider.setBounds   (r.reduced (6));
 }

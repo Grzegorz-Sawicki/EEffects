@@ -27,9 +27,15 @@ DelayUI::DelayUI(juce::AudioProcessorValueTreeState& vts)
     wetLabel.attachToComponent(&wetSlider, false);
     addAndMakeVisible(wetLabel);
 
-    timeAttach = std::make_unique<Attachment>(parameters, "delayTimeMs", timeSlider);
-    feedbackAttach = std::make_unique<Attachment>(parameters, "delayFeedback", feedbackSlider);
-    wetAttach = std::make_unique<Attachment>(parameters, "delayWet", wetSlider);
+    bypassButton.setButtonText("Bypass");
+    bypassButton.setColour(juce::ToggleButton::tickColourId, juce::Colours::white);
+    bypassButton.setWantsKeyboardFocus(false);
+    addAndMakeVisible(bypassButton);
+
+    timeAttach = std::make_unique<SliderAttachment>(parameters, "delayTimeMs", timeSlider);
+    feedbackAttach = std::make_unique<SliderAttachment>(parameters, "delayFeedback", feedbackSlider);
+    wetAttach = std::make_unique<SliderAttachment>(parameters, "delayWet", wetSlider);
+	bypassAttach = std::make_unique<ButtonAttachment>(parameters, "delayBypass", bypassButton);
 }
 
 void DelayUI::paint(juce::Graphics& g)
@@ -40,6 +46,13 @@ void DelayUI::paint(juce::Graphics& g)
 void DelayUI::resized()
 {
     auto r = getLocalBounds().reduced(6);
+
+    // reserve a small top area for the bypass button
+    const int btnH = 24;
+    auto topArea = r.removeFromTop(btnH + 4);
+    const int btnW = 90;
+    bypassButton.setBounds(topArea.removeFromRight(btnW).reduced(2));
+
     int w = r.getWidth() / 3;
     timeSlider.setBounds(r.removeFromLeft(w).reduced(6));
     feedbackSlider.setBounds(r.removeFromLeft(w).reduced(6));

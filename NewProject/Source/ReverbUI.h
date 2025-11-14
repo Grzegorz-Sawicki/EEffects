@@ -16,7 +16,11 @@ public:
 private:
     juce::Slider wetSlider, roomSlider, dampingSlider, widthSlider;
     juce::Label wetLabel, roomLabel, dampingLabel, widthLabel;
+	juce::ToggleButton bypassButton;
 
-    using Attachment = juce::AudioProcessorValueTreeState::SliderAttachment;
-    std::unique_ptr<Attachment> wetAttach, roomAttach, dampingAttach, widthAttach;
+    using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+    std::unique_ptr<SliderAttachment> wetAttach, roomAttach, dampingAttach, widthAttach;
+
+    using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
+	std::unique_ptr<ButtonAttachment> bypassAttach;
 };

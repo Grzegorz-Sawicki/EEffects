@@ -233,6 +233,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout NewProjectAudioProcessor::cr
         juce::ParameterID { "reverbWidth", 1 }, "Reverb Width",
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 1.0f));
 
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+		juce::ParameterID{ "reverbBypass", 1 }, "Reverb Freeze", false));
+
     // Delay parameters
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { "delayTimeMs", 1 }, "Delay Time (ms)",
@@ -245,6 +248,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout NewProjectAudioProcessor::cr
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { "delayWet", 1 }, "Delay Wet",
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.25f));
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        juce::ParameterID{ "delayBypass", 1 }, "Delay Freeze", false));
 
     return { params.begin(), params.end() };
 }
