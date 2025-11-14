@@ -15,7 +15,7 @@ public:
     int preferredWidth()  const noexcept { return kComponentW; }
 
 private:
-    static constexpr int kComponentW = 360;
+    static constexpr int kComponentW = 500;
     static constexpr int kComponentH = 140;
     static constexpr int kBypassW    = 24;
     static constexpr int kBypassH    = 24;
@@ -28,6 +28,8 @@ private:
 
     juce::ToggleButton bypassButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassAttach;
+
+    juce::Label titleLabel;
 
     using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
     std::unique_ptr<SliderAttachment> wetAttach, roomAttach, dampingAttach, widthAttach;

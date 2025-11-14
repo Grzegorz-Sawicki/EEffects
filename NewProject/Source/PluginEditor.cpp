@@ -21,7 +21,7 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     addAndMakeVisible(reverbUI);
     addAndMakeVisible(delayUI);
 
-    setSize (400, 480);
+    setSize (500, 500);
 }
 
 NewProjectAudioProcessorEditor::~NewProjectAudioProcessorEditor()

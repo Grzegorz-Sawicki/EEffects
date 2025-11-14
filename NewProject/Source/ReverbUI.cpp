@@ -37,6 +37,10 @@ ReverbUI::ReverbUI (juce::AudioProcessorValueTreeState& vts)
     bypassButton.setWantsKeyboardFocus (false);
     addAndMakeVisible (bypassButton);
 
+	titleLabel.setText("Reverb", juce::dontSendNotification);
+	titleLabel.setWantsKeyboardFocus(false);
+	addAndMakeVisible(titleLabel);
+
     // Attachments
     wetAttach     = std::make_unique<SliderAttachment> (parameters, "reverbWet",     wetSlider);
     roomAttach    = std::make_unique<SliderAttachment> (parameters, "reverbRoom",    roomSlider);
@@ -65,7 +69,7 @@ void ReverbUI::resized()
     int knobsX = r.getX();
     int knobsW = bx - knobsX - kPadding;
     int knobAreaW = juce::jmax (0, knobsW);
-    int knobCount = 4;
+    int knobCount = 5;
     int spacing = (knobAreaW - knobCount * kKnobSz) / (knobCount + 1);
     if (spacing < 6) spacing = 6;
 
@@ -79,6 +83,9 @@ void ReverbUI::resized()
     roomLabel.setFont (lblFont);
     dampingLabel.setFont (lblFont);
     widthLabel.setFont (lblFont);
+
+    titleLabel.setBounds(x, knobY, kKnobSz, kKnobSz);
+	x += kKnobSz + spacing;
 
     wetSlider.setBounds     (x, knobY, kKnobSz, kKnobSz);
     wetLabel.setBounds      (x, labelY, kKnobSz, kLabelH);
