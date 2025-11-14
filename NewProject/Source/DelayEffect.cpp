@@ -43,13 +43,11 @@ void DelayEffect::reset()
 
 void DelayEffect::process (juce::AudioBuffer<float>& buffer)
 {
+    if (!isActive())
+        return;
+
 	const bool bypass = *parameters.getRawParameterValue("delayBypass") == true;
     if (bypass)
-		setActive(false);
-    else 
-		setActive(true);
-
-    if (! isActive())
         return;
 
     const int numChannels = buffer.getNumChannels();

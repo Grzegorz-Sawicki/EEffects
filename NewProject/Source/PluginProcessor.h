@@ -64,6 +64,13 @@ public:
     // Helper to construct parameter layout
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
+    // UI / editor helpers for chain management (thread-safe)
+    int getNumEffects() const noexcept;
+    juce::String getEffectName (int index) const noexcept;
+    bool isEffectActive (int index) const noexcept;
+    void setEffectActive (int index, bool active) noexcept;
+    void moveEffect (int fromIndex, int toIndex) noexcept;
+
 private:
     const float smoothingTimeSeconds = 0.02f;
 
@@ -74,6 +81,9 @@ private:
     PanEffect outputPan;
     ReverbEffect reverb;
     DelayEffect delay;
+
+    // lock protecting effects vector for brief GUI modifications
+    mutable juce::SpinLock effectsLock;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NewProjectAudioProcessor)

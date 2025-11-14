@@ -21,13 +21,11 @@ void ReverbEffect::reset()
 
 void ReverbEffect::process(juce::AudioBuffer<float>& buffer)
 {
+    if (!isActive())
+        return;
+
     const bool bypass = *parameters.getRawParameterValue("reverbBypass");
     if (bypass)
-        setActive(false);
-    else
-        setActive(true);
-
-    if (!isActive())
         return;
 
     const int numChannels = buffer.getNumChannels();

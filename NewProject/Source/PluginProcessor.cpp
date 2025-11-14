@@ -22,11 +22,11 @@ NewProjectAudioProcessor::NewProjectAudioProcessor()
                      #endif
                        ),
        parameters (*this, nullptr, "PARAMETERS", createParameterLayout()),
-	   reverb(parameters),
+       reverb(parameters),
        delay(parameters, 1.0f),
-	inputGain(parameters),
-	outputGain(parameters, "outputGain"),
-	outputPan(parameters)
+       inputGain(parameters),
+       outputGain(parameters, "outputGain"),
+       outputPan(parameters)
 #endif
 {
 }
@@ -98,6 +98,54 @@ void NewProjectAudioProcessor::changeProgramName (int index, const juce::String&
 }
 
 //==============================================================================
+// Chain management helpers
+int NewProjectAudioProcessor::getNumEffects() const noexcept
+{
+    const juce::SpinLock::ScopedLockType sl (effectsLock);
+    return static_cast<int> (effects.size());
+}
+
+juce::String NewProjectAudioProcessor::getEffectName (int index) const noexcept
+{
+    const juce::SpinLock::ScopedLockType sl (effectsLock);
+    if (index >= 0 && index < (int) effects.size() && effects[index] != nullptr)
+        return effects[index]->getName();
+    return {};
+}
+
+bool NewProjectAudioProcessor::isEffectActive (int index) const noexcept
+{
+    const juce::SpinLock::ScopedLockType sl (effectsLock);
+    if (index >= 0 && index < (int) effects.size() && effects[index] != nullptr)
+        return effects[index]->isActive();
+    return false;
+}
+
+void NewProjectAudioProcessor::setEffectActive (int index, bool active) noexcept
+{
+    const juce::SpinLock::ScopedLockType sl (effectsLock);
+    if (index >= 0 && index < (int) effects.size() && effects[index] != nullptr)
+        effects[index]->setActive (active);
+}
+
+void NewProjectAudioProcessor::moveEffect (int fromIndex, int toIndex) noexcept
+{
+    const juce::SpinLock::ScopedLockType sl (effectsLock);
+
+    if (fromIndex == toIndex || fromIndex < 0 || toIndex < 0)
+        return;
+
+    const int n = static_cast<int> (effects.size());
+    if (fromIndex >= n || toIndex >= n)
+        return;
+
+    auto ptr = effects[fromIndex];
+    effects.erase (effects.begin() + fromIndex);
+    effects.insert (effects.begin() + toIndex, ptr);
+}
+
+//==============================================================================
+
 void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     juce::dsp::ProcessSpec spec;
@@ -105,20 +153,30 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     spec.maximumBlockSize = static_cast<juce::uint32> (samplesPerBlock);
     spec.numChannels = static_cast<juce::uint32> (getTotalNumOutputChannels());
 
-    effects.clear();
-	effects.push_back(&inputGain);
-    effects.push_back(&reverb);
-    effects.push_back(&delay);
-	effects.push_back(&outputGain);
-	effects.push_back(&outputPan);
-
-    for each(IEffect* eff in effects)
     {
-        (*eff).reset();
-		(*eff).prepare(spec);
+        const juce::SpinLock::ScopedLockType sl (effectsLock);
+        effects.clear();
+        effects.push_back(&inputGain);
+        effects.push_back(&reverb);
+        effects.push_back(&delay);
+        effects.push_back(&outputGain);
+        effects.push_back(&outputPan);
     }
-	
 
+    std::vector<IEffect*> localCopy;
+    {
+        const juce::SpinLock::ScopedLockType sl (effectsLock);
+        localCopy = effects;
+    }
+
+    for (auto* eff : localCopy)
+    {
+        if (eff)
+        {
+            eff->reset();
+            eff->prepare(spec);
+        }
+    }
 }
 
 void NewProjectAudioProcessor::releaseResources()
@@ -155,15 +213,21 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    const int numSamples = buffer.getNumSamples();
-
-    for each(IEffect* eff in effects)
+    std::vector<IEffect*> localCopy;
     {
-        (*eff).process(buffer);
-	}
+        const juce::SpinLock::ScopedLockType sl (effectsLock);
+        localCopy = effects;
+    }
+
+    for (auto* eff : localCopy)
+    {
+        if (eff && eff->isActive())
+            eff->process(buffer);
+    }
 }
 
 //==============================================================================
+
 bool NewProjectAudioProcessor::hasEditor() const
 {
     return true;
@@ -175,6 +239,7 @@ juce::AudioProcessorEditor* NewProjectAudioProcessor::createEditor()
 }
 
 //==============================================================================
+// State management
 void NewProjectAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = parameters.copyState();
@@ -234,7 +299,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout NewProjectAudioProcessor::cr
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 1.0f));
 
     params.push_back(std::make_unique<juce::AudioParameterBool>(
-		juce::ParameterID{ "reverbBypass", 1 }, "Reverb Freeze", false));
+        juce::ParameterID{ "reverbBypass", 1 }, "Reverb Bypass", false));
 
     // Delay parameters
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
@@ -250,7 +315,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout NewProjectAudioProcessor::cr
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.25f));
 
     params.push_back(std::make_unique<juce::AudioParameterBool>(
-        juce::ParameterID{ "delayBypass", 1 }, "Delay Freeze", false));
+        juce::ParameterID{ "delayBypass", 1 }, "Delay Bypass", false));
 
     return { params.begin(), params.end() };
 }
