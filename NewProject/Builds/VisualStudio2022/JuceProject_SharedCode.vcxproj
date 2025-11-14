@@ -137,7 +137,9 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\BasicEffectsUI.cpp" />
     <ClCompile Include="..\..\Source\DelayEffect.cpp" />
+    <ClCompile Include="..\..\Source\DelayUI.cpp" />
     <ClCompile Include="..\..\Source\GainEffect.cpp" />
     <ClCompile Include="..\..\Source\PanEffect.cpp" />
     <ClCompile Include="..\..\Source\PluginProcessor.cpp" />
@@ -2944,10 +2946,14 @@
     </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp" />
     <ClCompile Include="..\..\Source\ReverbEffect.cpp" />
+    <ClCompile Include="..\..\Source\ReverbUI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\BasicEffectsUI.h" />
     <ClInclude Include="..\..\Source\DelayEffect.h" />
+    <ClInclude Include="..\..\Source\DelayUI.h" />
     <ClInclude Include="..\..\Source\Effect.h" />
+    <ClInclude Include="..\..\Source\EffectUI.h" />
     <ClInclude Include="..\..\Source\GainEffect.h" />
     <ClInclude Include="..\..\Source\PanEffect.h" />
     <ClInclude Include="..\..\Source\PluginProcessor.h" />
@@ -4306,6 +4312,7 @@
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h" />
     <ClInclude Include="..\..\JuceLibraryCode\JucePluginDefines.h" />
     <ClInclude Include="..\..\Source\ReverbEffect.h" />
+    <ClInclude Include="..\..\Source\ReverbUI.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\..\..\..\JUCE\modules\juce_audio_devices\native\oboe\src\common\README.md" />

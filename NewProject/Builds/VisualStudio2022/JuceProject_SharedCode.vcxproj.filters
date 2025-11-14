@@ -682,6 +682,9 @@
     <Filter Include="JuceProject\Source\Effects">
       <UniqueIdentifier>{934d5eee-9a3c-4460-a6a4-651fa40b05ad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="JuceProject\Source\UI">
+      <UniqueIdentifier>{cf3fbeaa-52b7-4e5c-a1af-29743b201063}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\PluginProcessor.cpp">
@@ -3530,6 +3533,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Source\PanEffect.cpp">
       <Filter>JuceProject\Source\Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\ReverbUI.cpp">
+      <Filter>JuceProject\Source\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\DelayUI.cpp">
+      <Filter>JuceProject\Source\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\BasicEffectsUI.cpp">
+      <Filter>JuceProject\Source\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -7612,6 +7624,18 @@
     </ClInclude>
     <ClInclude Include="..\..\Source\PanEffect.h">
       <Filter>JuceProject\Source\Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\EffectUI.h">
+      <Filter>JuceProject\Source\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\ReverbUI.h">
+      <Filter>JuceProject\Source\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\DelayUI.h">
+      <Filter>JuceProject\Source\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\BasicEffectsUI.h">
+      <Filter>JuceProject\Source\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
