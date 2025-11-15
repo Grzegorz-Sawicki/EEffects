@@ -33,6 +33,7 @@ private:
     NewProjectAudioProcessor& audioProcessor;
 
     ReverbUI reverbUI;
+	DelayUI  delayUI;
 	//BasicEffectsUI basicEffectsUI;
  //   ReverbUI reverbUI;
  //   DelayUI  delayUI;

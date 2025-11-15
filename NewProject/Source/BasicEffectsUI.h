@@ -2,7 +2,7 @@
 
 #include "EffectUI.h"
 
-class BasicEffectsUI : public EffectUI
+class BasicEffectsUI : public juce::Component
 {
 public:
     BasicEffectsUI(juce::AudioProcessorValueTreeState& vts);

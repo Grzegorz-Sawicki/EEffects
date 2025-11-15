@@ -5,21 +5,11 @@
 class DelayUI : public EffectUI
 {
 public:
-    DelayUI(juce::AudioProcessorValueTreeState& vts);
-    ~DelayUI() override = default;
-
-    void paint(juce::Graphics&) override;
-    void resized() override;
-
-
-private:
-    juce::Slider timeSlider, feedbackSlider, wetSlider;
-    juce::Label timeLabel, feedbackLabel, wetLabel;
-	juce::ToggleButton bypassButton;
-
-    using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
-    std::unique_ptr<SliderAttachment> timeAttach, feedbackAttach, wetAttach;
-
-    using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
-    std::unique_ptr<ButtonAttachment> bypassAttach;
+	DelayUI(juce::AudioProcessorValueTreeState& vts, juce::String effectName, juce::String bypassParameter) :
+		EffectUI(vts, effectName, bypassParameter)
+	{
+		this->addControl("Delay ms", "delayTimeMs");
+		this->addControl("Feedback", "delayFeedback");
+		this->addControl("Delay Wet", "delayWet");
+	}
 };
