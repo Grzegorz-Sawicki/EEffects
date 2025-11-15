@@ -32,7 +32,7 @@ private:
     // access the processor object that created it.
     NewProjectAudioProcessor& audioProcessor;
 
-    EffectUI effectUI;
+    ReverbUI reverbUI;
 	//BasicEffectsUI basicEffectsUI;
  //   ReverbUI reverbUI;
  //   DelayUI  delayUI;
