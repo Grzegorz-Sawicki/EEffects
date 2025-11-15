@@ -32,11 +32,30 @@ private:
     // access the processor object that created it.
     NewProjectAudioProcessor& audioProcessor;
 
+    struct EffectsListUI : juce::Component
+    {
+        EffectsListUI() {}
+        void paint(juce::Graphics& g) override
+        {
+            g.fillAll(juce::Colours::darkgrey);
+        }
+    };
+
+    struct EffectsRackUI : juce::Component
+    {
+        EffectsRackUI() {}
+        void paint(juce::Graphics& g) override
+        {
+            g.fillAll(juce::Colours::grey);
+        }
+	};
+
+    EffectsListUI effectsListUI;
+    EffectsRackUI effectsRackUI;
+    BasicEffectsUI basicEffectsUI;
+
     ReverbUI reverbUI;
 	DelayUI  delayUI;
-	//BasicEffectsUI basicEffectsUI;
- //   ReverbUI reverbUI;
- //   DelayUI  delayUI;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NewProjectAudioProcessorEditor)
 };

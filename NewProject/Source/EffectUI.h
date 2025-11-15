@@ -14,7 +14,7 @@ public:
         controlsComponent = std::make_unique<ControlsComponent>(parameters);
         bypassComponent = std::make_unique<BypassComponent>(parameters, bypassParameter);
 
-        setSize(kComponentW, kComponentH);
+        //setSize(kComponentW, kComponentH);
 
         addAndMakeVisible(*nameComponent);
         addAndMakeVisible(*controlsComponent);

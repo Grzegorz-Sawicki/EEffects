@@ -13,20 +13,17 @@
 NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioProcessor& p)
     : AudioProcessorEditor (&p),
       audioProcessor (p),
-	reverbUI(p.parameters, "Test", "reverbBypass"),
-	delayUI(p.parameters, "Delay", "delayBypass")
-   //   reverbUI (p.parameters),
-   //   delayUI (p.parameters),
-	  //basicEffectsUI(p.parameters)
+	reverbUI(p.parameters, "Reverb", "reverbBypass"),
+	delayUI(p.parameters, "Delay", "delayBypass"),
+	basicEffectsUI(p.parameters)
 {
-	//addAndMakeVisible(basicEffectsUI);
- //   addAndMakeVisible(reverbUI);
- //   addAndMakeVisible(delayUI);
+	addAndMakeVisible(effectsListUI);
+	addAndMakeVisible(effectsRackUI);
+	effectsRackUI.addAndMakeVisible(reverbUI);
+	effectsRackUI.addAndMakeVisible(delayUI);
+	addAndMakeVisible(basicEffectsUI);
 
-	addAndMakeVisible(reverbUI);
-	addAndMakeVisible(delayUI);
-
-    setSize (500, 500);
+    setSize (1000, 700);
 }
 
 NewProjectAudioProcessorEditor::~NewProjectAudioProcessorEditor()
@@ -44,13 +41,19 @@ void NewProjectAudioProcessorEditor::paint (juce::Graphics& g)
 
 void NewProjectAudioProcessorEditor::resized()
 {
-    auto area = getLocalBounds().reduced (12);
+    auto bounds = getLocalBounds();
 
-    int rowHeight = area.getHeight() / 3;
-    auto topRow = area.removeFromTop (rowHeight);
-    auto midRow = area.removeFromTop (rowHeight);
-    auto bottomRow = area;
+	auto basicEffectsBounds = bounds.removeFromBottom(bounds.getHeight() / 4);
+	auto effectsListBounds = bounds.removeFromLeft(bounds.getWidth() / 5);
+	auto effectsRackBounds = bounds;
 
-	reverbUI.setBounds(topRow.reduced(6));
-	delayUI.setBounds(midRow.reduced(6));
+	basicEffectsUI.setBounds(basicEffectsBounds);
+	effectsListUI.setBounds(effectsListBounds);
+	effectsRackUI.setBounds(effectsRackBounds);
+
+	auto rackLocal = effectsRackUI.getLocalBounds();
+
+	reverbUI.setBounds(rackLocal.removeFromTop(140));
+
+	delayUI.setBounds(rackLocal.removeFromTop(140));
 }
