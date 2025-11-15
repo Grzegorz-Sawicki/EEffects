@@ -13,13 +13,16 @@
 NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioProcessor& p)
     : AudioProcessorEditor (&p),
       audioProcessor (p),
-      reverbUI (p.parameters),
-      delayUI (p.parameters),
-	  basicEffectsUI(p.parameters)
+	effectUI(p.parameters, "Test", "reverbBypass")
+   //   reverbUI (p.parameters),
+   //   delayUI (p.parameters),
+	  //basicEffectsUI(p.parameters)
 {
-	addAndMakeVisible(basicEffectsUI);
-    addAndMakeVisible(reverbUI);
-    addAndMakeVisible(delayUI);
+	//addAndMakeVisible(basicEffectsUI);
+ //   addAndMakeVisible(reverbUI);
+ //   addAndMakeVisible(delayUI);
+
+	addAndMakeVisible(effectUI);
 
     setSize (500, 500);
 }
@@ -46,11 +49,11 @@ void NewProjectAudioProcessorEditor::resized()
     auto midRow = area.removeFromTop (rowHeight);
     auto bottomRow = area;
 
-	basicEffectsUI.setBounds(topRow.reduced(6));
+	effectUI.setBounds(topRow.reduced(6));
 
-    // Reverb component occupies middle row
-    reverbUI.setBounds (midRow.reduced (6));
+	//basicEffectsUI.setBounds(topRow.reduced(6));
 
-    // Delay component occupies bottom row
-    delayUI.setBounds (bottomRow.reduced (6));
+ //   reverbUI.setBounds (midRow.reduced (6));
+
+ //   delayUI.setBounds (bottomRow.reduced (6));
 }

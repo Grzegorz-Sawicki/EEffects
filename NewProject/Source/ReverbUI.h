@@ -11,7 +11,6 @@ public:
 	void paint(juce::Graphics&) override;
 	void resized() override;
 
-	int preferredHeight() const noexcept override { return kComponentH; }
 	int preferredWidth()  const noexcept { return kComponentW; }
 
 private:

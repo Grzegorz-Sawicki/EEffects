@@ -1,17 +1,9 @@
 #include "ReverbUI.h"
 
 ReverbUI::ReverbUI (juce::AudioProcessorValueTreeState& vts)
-    : EffectUI (vts)
+    : EffectUI (vts, "Reverb", "")
 {
     setSize (kComponentW, kComponentH);
-
-    auto setup = [this] (juce::Slider& s)
-    {
-        s.setSliderStyle (juce::Slider::RotaryVerticalDrag);
-        s.setTextBoxStyle (juce::Slider::TextBoxBelow, true, 60, 20);
-        s.setWantsKeyboardFocus (false);
-        addAndMakeVisible (s);
-    };
 
     addAndMakeVisible(nameComponent);
 	addAndMakeVisible(controlsComponent);

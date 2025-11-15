@@ -32,9 +32,10 @@ private:
     // access the processor object that created it.
     NewProjectAudioProcessor& audioProcessor;
 
-	BasicEffectsUI basicEffectsUI;
-    ReverbUI reverbUI;
-    DelayUI  delayUI;
+    EffectUI effectUI;
+	//BasicEffectsUI basicEffectsUI;
+ //   ReverbUI reverbUI;
+ //   DelayUI  delayUI;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NewProjectAudioProcessorEditor)
 };

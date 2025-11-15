@@ -1,7 +1,7 @@
 #include "BasicEffectsUI.h"
 
 BasicEffectsUI::BasicEffectsUI(juce::AudioProcessorValueTreeState& vts)
-    : EffectUI(vts)
+    : EffectUI(vts, "Basic", "")
 {
     auto setupSlider = [this](juce::Slider& s)
         {

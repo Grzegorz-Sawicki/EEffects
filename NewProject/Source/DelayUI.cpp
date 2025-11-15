@@ -1,7 +1,7 @@
 #include "DelayUI.h"
 
 DelayUI::DelayUI(juce::AudioProcessorValueTreeState& vts)
-    : EffectUI(vts)
+    : EffectUI(vts, "Delay", "")
 {
     auto setup = [this](juce::Slider& s)
         {
