@@ -7631,6 +7631,12 @@
     <ClInclude Include="..\..\Source\BasicEffectsUI.h">
       <Filter>JuceProject\Source\UI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\EffectsListUI.h">
+      <Filter>JuceProject\Source\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\EffectsRackUI.h">
+      <Filter>JuceProject\Source\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\..\..\..\JUCE\modules\juce_audio_devices\native\oboe\src\common\README.md">
