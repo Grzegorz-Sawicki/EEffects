@@ -13,15 +13,55 @@
 NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioProcessor& p)
     : AudioProcessorEditor (&p),
       audioProcessor (p),
-	reverbUI(p.parameters, "Reverb", "reverbBypass"),
-	delayUI(p.parameters, "Delay", "delayBypass"),
-	basicEffectsUI(p.parameters)
+      reverbUI(p.parameters, "Reverb", "reverbBypass"),
+      delayUI(p.parameters, "Delay", "delayBypass"),
+      basicEffectsUI(p.parameters)
 {
-	addAndMakeVisible(effectsListUI);
-	addAndMakeVisible(effectsRackUI);
-	effectsRackUI.addAndMakeVisible(reverbUI);
-	effectsRackUI.addAndMakeVisible(delayUI);
-	addAndMakeVisible(basicEffectsUI);
+    addAndMakeVisible(effectsListUI);
+    addAndMakeVisible(effectsRackUI);
+    effectsRackUI.addAndMakeVisible(reverbUI);
+    effectsRackUI.addAndMakeVisible(delayUI);
+    addAndMakeVisible(basicEffectsUI);
+
+    auto refreshEffectsList = [this]()
+    {
+        std::vector<juce::String> names;
+        std::vector<bool> actives;
+
+        const int n = audioProcessor.getNumEffects();
+        names.reserve(n);
+        actives.reserve(n);
+
+        for (int i = 0; i < n; ++i)
+        {
+            names.push_back (audioProcessor.getEffectName (i));
+            actives.push_back (audioProcessor.isEffectActive (i));
+        }
+
+        juce::MessageManager::callAsync ([this, names = std::move(names), actives = std::move(actives)]()
+        {
+            effectsListUI.setEffects (names, &actives);
+        });
+    };
+
+    effectsListUI.onToggleChanged = [this] (int idx, bool state)
+    {
+        audioProcessor.setEffectActive (idx, state);
+    };
+
+    effectsListUI.onRowClicked = [this] (int idx)
+    {
+        DBG ("EffectsListUI row clicked: " << idx << " -> " << audioProcessor.getEffectName (idx));
+        // TODO: implement scrolling of effectsRackUI to the effect at index `idx`
+    };
+
+    effectsListUI.onRowMoved = [this, refreshEffectsList] (int fromIndex, int toIndex)
+    {
+        audioProcessor.moveEffect (fromIndex, toIndex);
+        refreshEffectsList();
+    };
+
+    refreshEffectsList();
 
     setSize (1000, 700);
 }
