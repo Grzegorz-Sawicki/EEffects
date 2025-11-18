@@ -41,7 +41,7 @@ void BasicEffectsUI::resized()
     auto r = getLocalBounds().reduced(6);
     int w = r.getWidth() / 3;
 
-    inputSlider.setBounds(r.removeFromLeft(w).reduced(6));
-    panSlider.setBounds(r.removeFromLeft(w).reduced(6));
-    outputSlider.setBounds(r.reduced(6));
+    inputSlider.setBounds(r.removeFromLeft(w).reduced(30));
+    panSlider.setBounds(r.removeFromLeft(w).reduced(30));
+    outputSlider.setBounds(r.reduced(30));
 }
