@@ -26,7 +26,6 @@
     <ClInclude Include="..\..\..\..\..\..\..\JUCE\modules\juce_audio_plugin_client\Standalone\juce_StandaloneFilterWindow.h">
       <Filter>JUCE Modules\juce_audio_plugin_client\Standalone</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include=".\resources.rc">
