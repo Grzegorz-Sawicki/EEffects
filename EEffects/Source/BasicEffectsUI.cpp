@@ -1,7 +1,6 @@
 #include "BasicEffectsUI.h"
 
 BasicEffectsUI::BasicEffectsUI(juce::AudioProcessorValueTreeState& vts)
-    : EffectUI(vts)
 {
     auto setupSlider = [this](juce::Slider& s)
         {
@@ -27,9 +26,9 @@ BasicEffectsUI::BasicEffectsUI(juce::AudioProcessorValueTreeState& vts)
     outputLabel.attachToComponent(&outputSlider, false);
     addAndMakeVisible(outputLabel);
 
-    inputAttach = std::make_unique<Attachment>(parameters, "inputGain", inputSlider);
-    panAttach = std::make_unique<Attachment>(parameters, "pan", panSlider);
-    outputAttach = std::make_unique<Attachment>(parameters, "outputGain", outputSlider);
+    inputAttach = std::make_unique<Attachment>(vts, "inputGain", inputSlider);
+    panAttach = std::make_unique<Attachment>(vts, "pan", panSlider);
+    outputAttach = std::make_unique<Attachment>(vts, "outputGain", outputSlider);
 }
 
 void BasicEffectsUI::paint(juce::Graphics& g)
@@ -42,7 +41,7 @@ void BasicEffectsUI::resized()
     auto r = getLocalBounds().reduced(6);
     int w = r.getWidth() / 3;
 
-    inputSlider.setBounds(r.removeFromLeft(w).reduced(6));
-    panSlider.setBounds(r.removeFromLeft(w).reduced(6));
-    outputSlider.setBounds(r.reduced(6));
+    inputSlider.setBounds(r.removeFromLeft(w).reduced(30));
+    panSlider.setBounds(r.removeFromLeft(w).reduced(30));
+    outputSlider.setBounds(r.reduced(30));
 }

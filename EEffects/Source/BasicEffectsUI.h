@@ -2,7 +2,7 @@
 
 #include "EffectUI.h"
 
-class BasicEffectsUI : public EffectUI
+class BasicEffectsUI : public juce::Component
 {
 public:
     BasicEffectsUI(juce::AudioProcessorValueTreeState& vts);
@@ -11,7 +11,6 @@ public:
     void paint(juce::Graphics&) override;
     void resized() override;
 
-    int preferredHeight() const noexcept override { return 120; }
 
 private:
     juce::Slider inputSlider;

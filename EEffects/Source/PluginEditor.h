@@ -13,6 +13,11 @@
 #include "BasicEffectsUI.h"
 #include "ReverbUI.h"
 #include "DelayUI.h"
+#include "EffectsListUI.h"
+#include "EffectsRackUI.h"
+#include <functional>
+#include <vector>
+#include <memory>
 
 //==============================================================================
 /**
@@ -32,7 +37,10 @@ private:
     // access the processor object that created it.
     NewProjectAudioProcessor& audioProcessor;
 
-	BasicEffectsUI basicEffectsUI;
+    EffectsListUI effectsListUI;
+    EffectsRackUI effectsRackUI;
+    BasicEffectsUI basicEffectsUI;
+
     ReverbUI reverbUI;
     DelayUI  delayUI;
 

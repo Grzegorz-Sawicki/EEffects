@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="SEwi9v" name="JuceProject" projectType="audioplug" jucerFormatVersion="1"
+<JUCERPROJECT id="SEwi9v" name="EEffects" projectType="audioplug" jucerFormatVersion="1"
               companyName="ee" pluginFormats="buildStandalone,buildVST3" pluginAUMainType="'aufx'"
               pluginVST3Category="Fx">
-  <MAINGROUP id="h2BHT0" name="JuceProject">
+  <MAINGROUP id="h2BHT0" name="EEffects">
     <GROUP id="{5B96E18C-FE98-1099-1E56-6FB1ABCA4B21}" name="Source">
       <FILE id="bpZVHC" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

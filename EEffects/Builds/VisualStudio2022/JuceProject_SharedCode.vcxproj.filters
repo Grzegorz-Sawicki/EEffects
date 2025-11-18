@@ -3534,12 +3534,6 @@
     <ClCompile Include="..\..\Source\PanEffect.cpp">
       <Filter>JuceProject\Source\Effects</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\ReverbUI.cpp">
-      <Filter>JuceProject\Source\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\DelayUI.cpp">
-      <Filter>JuceProject\Source\UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\BasicEffectsUI.cpp">
       <Filter>JuceProject\Source\UI</Filter>
     </ClCompile>
@@ -7635,6 +7629,12 @@
       <Filter>JuceProject\Source\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\BasicEffectsUI.h">
+      <Filter>JuceProject\Source\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\EffectsListUI.h">
+      <Filter>JuceProject\Source\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\EffectsRackUI.h">
       <Filter>JuceProject\Source\UI</Filter>
     </ClInclude>
   </ItemGroup>
