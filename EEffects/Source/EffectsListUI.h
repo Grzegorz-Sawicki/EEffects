@@ -68,6 +68,8 @@ private:
     {
         RowComponent()
         {
+            this->setInterceptsMouseClicks(false, true);
+
             nameLabel.setJustificationType(juce::Justification::centredLeft);
             toggle.setColour(juce::ToggleButton::tickColourId, juce::Colours::white);
 
@@ -87,10 +89,11 @@ private:
 
         void resized() override
         {
-            auto r = getLocalBounds().reduced(4);
-            auto left = r.removeFromLeft(r.getWidth() - 28);
-            nameLabel.setBounds(left);
-            toggle.setBounds(r.removeFromRight(24));
+            auto area = getLocalBounds();
+            auto nameArea = area.removeFromLeft(area.getWidth() / 4);
+            auto toggleArea = area.removeFromRight(24);
+            nameLabel.setBounds(nameArea);
+            toggle.setBounds(toggleArea);
         }
 
         void mouseDown(const juce::MouseEvent&) override
