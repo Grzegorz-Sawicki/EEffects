@@ -156,13 +156,12 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     {
         const juce::SpinLock::ScopedLockType sl (effectsLock);
         effects.clear();
-		effects.push_back(&inputGain);
         effects.push_back(&reverb);
         effects.push_back(&delay);
     }
 
-    //this->inputGain.reset();
-    //this->inputGain.prepare(spec);
+    this->inputGain.reset();
+    this->inputGain.prepare(spec);
     this->outputGain.reset();
     this->outputGain.prepare(spec);
     this->outputPan.reset();
@@ -218,7 +217,7 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    //this->inputGain.process(buffer);
+    this->inputGain.process(buffer);
 
     std::vector<IEffect*> localCopy;
     {

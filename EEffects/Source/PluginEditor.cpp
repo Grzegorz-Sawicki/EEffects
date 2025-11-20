@@ -52,6 +52,7 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     effectsListUI.onRowMoved = [this, refreshEffectsList] (int fromIndex, int toIndex)
     {
         audioProcessor.moveEffect (fromIndex, toIndex);
+		effectsRackUI.moveEffectUI(fromIndex, toIndex);
         refreshEffectsList();
     };
 

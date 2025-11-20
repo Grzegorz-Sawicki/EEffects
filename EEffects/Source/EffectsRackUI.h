@@ -29,6 +29,21 @@ public:
         listBox.repaint();
     }
 
+    void moveEffectUI(int fromIndex, int toIndex)
+    {
+        if (fromIndex < 0 || fromIndex >= (int)effectUIs.size() ||
+            toIndex < 0 || toIndex >= (int)effectUIs.size() ||
+            fromIndex == toIndex)
+            return;
+
+		DBG("Moving effect UI from " + juce::String(fromIndex) + " to " + juce::String(toIndex));
+        auto ptr = effectUIs[(size_t)fromIndex];
+        std::swap(effectUIs[(size_t)fromIndex], effectUIs[(size_t)toIndex]);
+
+        listBox.updateContent();
+        listBox.repaint();
+	}   
+
     void setEffectUIs(const std::vector<EffectUI*>& effectUIsIn)
     {
         effectUIs = effectUIsIn;
@@ -62,16 +77,8 @@ private:
         if (isPositiveAndBelow(rowNumber, (int)effectUIs.size()))
         {
             EffectUI* effectUI = effectUIs[(size_t)rowNumber];
-            if (existingComponentToUpdate == nullptr)
-            {
-                // Create a new component for this row
-                return effectUI;
-            }
-            else
-            {
-                // Update the existing component if necessary
-                return existingComponentToUpdate;
-            }
+            return effectUI;
+
         }
         return nullptr;
 	}
