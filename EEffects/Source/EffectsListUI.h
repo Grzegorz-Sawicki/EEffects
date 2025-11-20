@@ -54,7 +54,6 @@ public:
     }
 
     std::function<void(int, bool)> onToggleChanged; // (index, state)
-    std::function<void(int)> onRowClicked;         // (index)
     std::function<void(int, int)> onRowMoved;       // (from, to)
 
     void paint(juce::Graphics& g) override
@@ -239,7 +238,6 @@ private:
         const bool active = (rowNumber < (int)activesVec.size()) ? activesVec[(size_t)rowNumber] : true;
         rc->setActive(active);
 
-        rc->onClicked = [this](int idx) { if (onRowClicked) onRowClicked(idx); };
         rc->onToggled = [this](int idx, bool state)
             {
                 if (isPositiveAndBelow(idx, (int)activesVec.size()))

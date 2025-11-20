@@ -49,12 +49,6 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
         audioProcessor.setEffectActive (idx, state);
     };
 
-    effectsListUI.onRowClicked = [this] (int idx)
-    {
-        DBG ("EffectsListUI row clicked: " << idx << " -> " << audioProcessor.getEffectName (idx));
-        // TODO: implement scrolling of effectsRackUI to the effect at index `idx`
-    };
-
     effectsListUI.onRowMoved = [this, refreshEffectsList] (int fromIndex, int toIndex)
     {
         audioProcessor.moveEffect (fromIndex, toIndex);
