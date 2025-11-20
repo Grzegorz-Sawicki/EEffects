@@ -2,7 +2,11 @@
 
 #include <JuceHeader.h>
 
-class EffectsListUI : public juce::Component, public juce::ListBoxModel
+class EffectsListUI : 
+    public juce::Component, 
+    public juce::ListBoxModel, 
+    public juce::DragAndDropContainer,
+    public juce::DragAndDropTarget
 {
 public:
     EffectsListUI()
@@ -51,7 +55,7 @@ public:
 
     std::function<void(int, bool)> onToggleChanged; // (index, state)
     std::function<void(int)> onRowClicked;         // (index)
-    std::function<void(int, int)> onRowMoved;       // (from, to) - not used here yet
+    std::function<void(int, int)> onRowMoved;       // (from, to)
 
     void paint(juce::Graphics& g) override
     {
@@ -61,6 +65,89 @@ public:
     void resized() override
     {
         listBox.setBounds(getLocalBounds());
+    }
+
+    var getDragSourceDescription(const SparseSet<int>& selectedRows) override
+    {
+        String row;
+
+		row = String(selectedRows[0]);
+
+        return row;
+    }
+
+    //Drag and drop
+
+    bool isInterestedInDragSource(const juce::DragAndDropTarget::SourceDetails& /*dragSourceDetails*/) override
+    {
+        return true;
+	}
+
+    void itemDragEnter(const SourceDetails& /*dragSourceDetails*/) override
+    {
+        repaint();
+    }
+
+    void itemDragMove(const SourceDetails& /*dragSourceDetails*/) override
+    {
+
+    }
+
+    void itemDragExit(const SourceDetails& /*dragSourceDetails*/) override
+    {
+        repaint();
+    }
+
+    void itemDropped(const SourceDetails& dragSourceDetails) override
+    {
+        // Read source index from drag description (digits)
+        auto desc = dragSourceDetails.description.toString();
+        if (! desc.containsOnly ("0123456789"))
+            return;
+
+        const int src = desc.getIntValue();
+        if (src < 0 || src >= (int) names.size())
+            return;
+
+        // Convert drop position to listBox coordinates
+        juce::Point<int> p = listBox.getLocalPoint (this, dragSourceDetails.localPosition.toInt());
+
+        // Get insertion index for the position
+        int dst = listBox.getInsertionIndexForPosition (p.x, p.y);
+        DBG("DST 1 = " + juce::String(dst));
+
+        // Clamp dst to valid range [0..names.size()]
+        dst = juce::jlimit (0, (int) names.size(), dst);
+        DBG("DST 2 = " + juce::String(dst));
+
+        if (dst == src || dst == src + 1)
+        {
+            repaint();
+            return;
+        }
+
+        // Use std::rotate to move element safely (avoids iterator/proxy issues with vector<bool>)
+        if (dst > src)
+        {
+            // move element at src to position dst-1
+            std::rotate(names.begin() + src, names.begin() + src + 1, names.begin() + dst);
+            std::rotate(activesVec.begin() + src, activesVec.begin() + src + 1, activesVec.begin() + dst);
+            int newDst = dst - 1;
+            listBox.updateContent();
+            listBox.repaint();
+            if (onRowMoved) onRowMoved (src, newDst);
+        }
+        else // dst < src
+        {
+            // move element at src to position dst
+            std::rotate(names.begin() + dst, names.begin() + src, names.begin() + src + 1);
+            std::rotate(activesVec.begin() + dst, activesVec.begin() + src, activesVec.begin() + src + 1);
+            listBox.updateContent();
+            listBox.repaint();
+            if (onRowMoved) onRowMoved (src, dst);
+        }
+
+        repaint();
     }
 
 private:
@@ -96,10 +183,24 @@ private:
             toggle.setBounds(toggleArea);
         }
 
-        void mouseDown(const juce::MouseEvent&) override
+        // start drag when mouse moves sufficiently; we rely on a DragAndDropContainer higher in hierarchy
+        void mouseDown(const juce::MouseEvent& e) override
         {
-            if (onClicked)
-                onClicked(rowIndex);
+            dragStart = e.getPosition();
+            if (onClicked) onClicked(rowIndex);
+        }
+
+        void mouseDrag(const juce::MouseEvent& e) override
+        {
+            auto delta = e.getPosition() - dragStart;
+            if (delta.getDistanceFromOrigin() > 6)
+            {
+                if (auto* container = juce::DragAndDropContainer::findParentDragContainerFor (this))
+                {
+                    // Use row index as drag description (string of digits)
+                    container->startDragging (juce::String (rowIndex), this);
+                }
+            }
         }
 
         juce::Label nameLabel;
@@ -110,6 +211,7 @@ private:
 
     private:
         int rowIndex = -1;
+        juce::Point<int> dragStart;
     };
 
     int getNumRows() override
