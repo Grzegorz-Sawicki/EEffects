@@ -19,8 +19,8 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
 {
     addAndMakeVisible(effectsListUI);
     addAndMakeVisible(effectsRackUI);
-    effectsRackUI.addAndMakeVisible(reverbUI);
-    effectsRackUI.addAndMakeVisible(delayUI);
+    //effectsRackUI.addAndMakeVisible(reverbUI);
+    //effectsRackUI.addAndMakeVisible(delayUI);
     addAndMakeVisible(basicEffectsUI);
 
     auto refreshEffectsList = [this]()
@@ -56,6 +56,9 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     };
 
     refreshEffectsList();
+	effectUIs.push_back(&reverbUI);
+	effectUIs.push_back(&delayUI);
+	effectsRackUI.setEffectUIs(effectUIs);
 
     setSize (1000, 700);
 }
@@ -84,10 +87,4 @@ void NewProjectAudioProcessorEditor::resized()
 	basicEffectsUI.setBounds(basicEffectsBounds);
 	effectsListUI.setBounds(effectsListBounds);
 	effectsRackUI.setBounds(effectsRackBounds);
-
-	auto rackLocal = effectsRackUI.getLocalBounds();
-
-	reverbUI.setBounds(rackLocal.removeFromTop(140));
-
-	delayUI.setBounds(rackLocal.removeFromTop(140));
 }

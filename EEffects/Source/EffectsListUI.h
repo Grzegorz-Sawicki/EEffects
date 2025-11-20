@@ -182,26 +182,6 @@ private:
             toggle.setBounds(toggleArea);
         }
 
-        // start drag when mouse moves sufficiently; we rely on a DragAndDropContainer higher in hierarchy
-        void mouseDown(const juce::MouseEvent& e) override
-        {
-            dragStart = e.getPosition();
-            if (onClicked) onClicked(rowIndex);
-        }
-
-        void mouseDrag(const juce::MouseEvent& e) override
-        {
-            auto delta = e.getPosition() - dragStart;
-            if (delta.getDistanceFromOrigin() > 6)
-            {
-                if (auto* container = juce::DragAndDropContainer::findParentDragContainerFor (this))
-                {
-                    // Use row index as drag description (string of digits)
-                    container->startDragging (juce::String (rowIndex), this);
-                }
-            }
-        }
-
         juce::Label nameLabel;
         juce::ToggleButton toggle;
 

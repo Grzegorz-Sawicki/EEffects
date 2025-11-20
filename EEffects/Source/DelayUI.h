@@ -12,4 +12,6 @@ public:
 		this->addControl("Feedback", "delayFeedback");
 		this->addControl("Delay Wet", "delayWet");
 	}
+
+	~DelayUI() override = default;
 };
