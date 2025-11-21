@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "EffectInfo.h"
 
 //==============================================================================
 NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioProcessor& p)
@@ -15,32 +16,23 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
       audioProcessor (p),
       reverbUI(p.parameters, "Reverb", "reverbBypass"),
       delayUI(p.parameters, "Delay", "delayBypass"),
-      basicEffectsUI(p.parameters)
+      basicEffectsUI(p.parameters),
+	  effectsListUI(audioProcessor.getEffectsInfo()),
+	  effectsRackUI(audioProcessor.getEffectsInfo())
 {
     addAndMakeVisible(effectsListUI);
     addAndMakeVisible(effectsRackUI);
-    //effectsRackUI.addAndMakeVisible(reverbUI);
-    //effectsRackUI.addAndMakeVisible(delayUI);
     addAndMakeVisible(basicEffectsUI);
 
     auto refreshEffectsList = [this]()
     {
-        std::vector<juce::String> names;
-        std::vector<bool> actives;
+		auto effectsInfo = audioProcessor.getEffectsInfo();
 
-        const int n = audioProcessor.getNumEffects();
-        names.reserve(n);
-        actives.reserve(n);
-
-        for (int i = 0; i < n; ++i)
+        juce::MessageManager::callAsync ([this, ei = std::vector<EffectInfo>(effectsInfo)]()
         {
-            names.push_back (audioProcessor.getEffectName (i));
-            actives.push_back (audioProcessor.isEffectActive (i));
-        }
-
-        juce::MessageManager::callAsync ([this, names = std::move(names), actives = std::move(actives)]()
-        {
-            effectsListUI.setEffects (names, &actives);
+            auto eiCopy = ei;
+            effectsListUI.setEffectsInfo(eiCopy);
+			effectsRackUI.setEffectsInfo(eiCopy);
         });
     };
 
@@ -52,7 +44,7 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     effectsListUI.onRowMoved = [this, refreshEffectsList] (int fromIndex, int toIndex)
     {
         audioProcessor.moveEffect (fromIndex, toIndex);
-		effectsRackUI.moveEffectUI(fromIndex, toIndex);
+		//effectsRackUI.moveEffectUI(fromIndex, toIndex);
         refreshEffectsList();
     };
 

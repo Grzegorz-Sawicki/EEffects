@@ -3,6 +3,8 @@
 #include <JuceHeader.h>
 #include <vector>
 #include "EffectUI.h"
+#include "ReverbUI.h"
+#include "DelayUI.h"
 
 //TODO: rethink list and rack setup
 
@@ -11,7 +13,8 @@ class EffectsRackUI :
     public juce::ListBoxModel
 {
 public:
-    EffectsRackUI() 
+    EffectsRackUI(std::vector<EffectInfo> effectsInfo) :
+		effectsInfo(effectsInfo)
     {
 		listBox.setModel(this);
 		listBox.setRowHeight(rowHeight);
@@ -19,6 +22,13 @@ public:
     }
 
 	~EffectsRackUI() override = default;
+
+    void setEffectsInfo(std::vector<EffectInfo>& effectsInfo)
+    {
+        this->effectsInfo = effectsInfo;
+        listBox.updateContent();
+        listBox.repaint();
+    }
 
     void addEffectUI(std::unique_ptr<EffectUI> effectUI)
     {
@@ -85,7 +95,13 @@ private:
     {
         if (isPositiveAndBelow(rowNumber, (int)effectUIs.size()))
         {
-            EffectUI* effectUI = effectUIs[(size_t)rowNumber];
+            EffectUI* effectUI;
+            if (effectsInfo[(size_t)rowNumber].name == "Reverb")
+                effectUI = effectUIs[0];
+			else if (effectsInfo[(size_t)rowNumber].name == "Delay")
+                effectUI = effectUIs[1];
+            else return nullptr;
+
             return effectUI;
 
         }
@@ -94,6 +110,7 @@ private:
 
     juce::ListBox listBox{ "EffectsRack" , this };
 	std::vector<EffectUI*> effectUIs;
+    std::vector<EffectInfo> effectsInfo;
 
 	static constexpr int rowHeight = 140;
 };

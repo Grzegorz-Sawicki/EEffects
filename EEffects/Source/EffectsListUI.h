@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "EffectInfo.h"
 
 class EffectsListUI : 
     public juce::Component, 
@@ -9,7 +10,8 @@ class EffectsListUI :
     public juce::DragAndDropTarget
 {
 public:
-    EffectsListUI()
+    EffectsListUI(std::vector<EffectInfo> effectsInfo) :
+        effectsInfo(effectsInfo)
     {
         listBox.setModel(this);
         listBox.setRowHeight(rowHeight);
@@ -18,39 +20,11 @@ public:
 
     ~EffectsListUI() override = default;
 
-    void setEffects(const std::vector<juce::String>& namesIn, const std::vector<bool>* actives = nullptr)
+    void setEffectsInfo(std::vector<EffectInfo>& effectsInfo)
     {
-        names = namesIn;
-        activesVec.clear();
-        if (actives != nullptr)
-            activesVec = *actives;
-        else
-            activesVec.assign(names.size(), true);
-
+        this->effectsInfo = effectsInfo;
         listBox.updateContent();
         listBox.repaint();
-    }
-
-    void setRowActive(int index, bool active)
-    {
-        if (isPositiveAndBelow(index, (int)activesVec.size()))
-        {
-            activesVec[(size_t)index] = active;
-            if (auto* rc = dynamic_cast<RowComponent*> (listBox.getComponentForRowNumber(index)))
-                rc->setActive(active);
-            listBox.repaintRow(index);
-        }
-    }
-
-    void setRowName(int index, const juce::String& name)
-    {
-        if (isPositiveAndBelow(index, (int)names.size()))
-        {
-            names[(size_t)index] = name;
-            if (auto* rc = dynamic_cast<RowComponent*> (listBox.getComponentForRowNumber(index)))
-                rc->setName(name);
-            listBox.repaintRow(index);
-        }
     }
 
     std::function<void(int, bool)> onToggleChanged; // (index, state)
@@ -99,25 +73,19 @@ public:
 
     void itemDropped(const SourceDetails& dragSourceDetails) override
     {
-        // Read source index from drag description (digits)
         auto desc = dragSourceDetails.description.toString();
         if (! desc.containsOnly ("0123456789"))
             return;
 
         const int src = desc.getIntValue();
-        if (src < 0 || src >= (int) names.size())
+        if (src < 0 || src >= (int) effectsInfo.size())
             return;
 
-        // Convert drop position to listBox coordinates
         juce::Point<int> p = listBox.getLocalPoint (this, dragSourceDetails.localPosition.toInt());
 
-        // Get insertion index for the position
         int dst = listBox.getInsertionIndexForPosition (p.x, p.y);
-        DBG("DST 1 = " + juce::String(dst));
 
-        // Clamp dst to valid range [0..names.size()]
-        dst = juce::jlimit (0, (int) names.size(), dst);
-        DBG("DST 2 = " + juce::String(dst));
+        dst = juce::jlimit (0, (int) effectsInfo.size(), dst);
 
         if (dst == src || dst == src + 1)
         {
@@ -125,24 +93,13 @@ public:
             return;
         }
 
-        // Use std::rotate to move element safely (avoids iterator/proxy issues with vector<bool>)
         if (dst > src)
-        {
-            // move element at src to position dst-1
-            std::rotate(names.begin() + src, names.begin() + src + 1, names.begin() + dst);
-            std::rotate(activesVec.begin() + src, activesVec.begin() + src + 1, activesVec.begin() + dst);
+        {           
             int newDst = dst - 1;
-            listBox.updateContent();
-            listBox.repaint();
             if (onRowMoved) onRowMoved (src, newDst);
         }
         else // dst < src
         {
-            // move element at src to position dst
-            std::rotate(names.begin() + dst, names.begin() + src, names.begin() + src + 1);
-            std::rotate(activesVec.begin() + dst, activesVec.begin() + src, activesVec.begin() + src + 1);
-            listBox.updateContent();
-            listBox.repaint();
             if (onRowMoved) onRowMoved (src, dst);
         }
 
@@ -195,7 +152,7 @@ private:
 
     int getNumRows() override
     {
-        return static_cast<int> (names.size());
+        return static_cast<int> (effectsInfo.size());
     }
 
     void paintListBoxItem(int rowNumber, juce::Graphics& g, int width, int height, bool rowIsSelected) override
@@ -206,7 +163,7 @@ private:
 
     juce::Component* refreshComponentForRow(int rowNumber, bool /*isRowSelected*/, juce::Component* existingComponentToUpdate) override
     {
-        if (rowNumber < 0 || rowNumber >= (int)names.size())
+        if (rowNumber < 0 || rowNumber >= (int)effectsInfo.size())
             return existingComponentToUpdate;
 
         RowComponent* rc = dynamic_cast<RowComponent*>(existingComponentToUpdate);
@@ -214,14 +171,13 @@ private:
             rc = new RowComponent();
 
         rc->setIndex(rowNumber);
-        rc->setName(names[(size_t)rowNumber]);
-        const bool active = (rowNumber < (int)activesVec.size()) ? activesVec[(size_t)rowNumber] : true;
-        rc->setActive(active);
+        rc->setName(effectsInfo[(size_t)rowNumber].name);
+        rc->setActive(effectsInfo[(size_t)rowNumber].active);
 
         rc->onToggled = [this](int idx, bool state)
             {
-                if (isPositiveAndBelow(idx, (int)activesVec.size()))
-                    activesVec[(size_t)idx] = state;
+                if (isPositiveAndBelow(idx, (int)effectsInfo.size()))
+                    effectsInfo[(size_t)idx].active = state;
 
                 if (onToggleChanged) onToggleChanged(idx, state);
             };
@@ -230,8 +186,7 @@ private:
     }
 
     juce::ListBox listBox{ "EffectsList", this };
-    std::vector<juce::String> names;
-    std::vector<bool> activesVec;
+    std::vector<EffectInfo> effectsInfo;
 
     static constexpr int rowHeight = 28;
 };

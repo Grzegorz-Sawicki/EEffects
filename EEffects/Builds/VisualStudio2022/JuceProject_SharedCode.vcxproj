@@ -2951,6 +2951,7 @@
     <ClInclude Include="..\..\Source\DelayEffect.h" />
     <ClInclude Include="..\..\Source\DelayUI.h" />
     <ClInclude Include="..\..\Source\Effect.h" />
+    <ClInclude Include="..\..\Source\EffectInfo.h" />
     <ClInclude Include="..\..\Source\EffectsListUI.h" />
     <ClInclude Include="..\..\Source\EffectsRackUI.h" />
     <ClInclude Include="..\..\Source\EffectUI.h" />

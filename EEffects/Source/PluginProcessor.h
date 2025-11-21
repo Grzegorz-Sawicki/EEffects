@@ -14,6 +14,7 @@
 #include "DelayEffect.h"
 #include "GainEffect.h"
 #include "PanEffect.h"
+#include "EffectInfo.h"
 
 //==============================================================================
 /**
@@ -71,10 +72,14 @@ public:
     void setEffectActive (int index, bool active) noexcept;
     void moveEffect (int fromIndex, int toIndex) noexcept;
 
+    std::vector<EffectInfo> getEffectsInfo() noexcept;
+	void syncEffectsInfo() noexcept;
+
 private:
     const float smoothingTimeSeconds = 0.02f;
 
 	std::vector<IEffect*> effects;
+    std::vector<EffectInfo> effectsInfo;
 
     GainEffect inputGain;
 	GainEffect outputGain;

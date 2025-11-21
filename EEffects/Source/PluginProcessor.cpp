@@ -124,8 +124,14 @@ bool NewProjectAudioProcessor::isEffectActive (int index) const noexcept
 void NewProjectAudioProcessor::setEffectActive (int index, bool active) noexcept
 {
     const juce::SpinLock::ScopedLockType sl (effectsLock);
-    if (index >= 0 && index < (int) effects.size() && effects[index] != nullptr)
-        effects[index]->setActive (active);
+
+    if (index >= 0 && index < (int)effectsInfo.size())
+    {
+        effectsInfo[index].active = active;
+
+        if (index >= 0 && index < (int)effects.size() && effects[index] != nullptr)
+            effects[index]->setActive(active);
+    }
 }
 
 void NewProjectAudioProcessor::moveEffect (int fromIndex, int toIndex) noexcept
@@ -139,9 +145,32 @@ void NewProjectAudioProcessor::moveEffect (int fromIndex, int toIndex) noexcept
     if (fromIndex >= n || toIndex >= n)
         return;
 
+	auto info = std::move(effectsInfo[fromIndex]);
+    effectsInfo.erase(effectsInfo.begin() + fromIndex);
+    effectsInfo.insert(effectsInfo.begin() + toIndex, std::move(info));
+
     auto ptr = effects[fromIndex];
     effects.erase (effects.begin() + fromIndex);
     effects.insert (effects.begin() + toIndex, ptr);
+}
+
+std::vector<EffectInfo> NewProjectAudioProcessor::getEffectsInfo() noexcept
+{
+    const juce::SpinLock::ScopedLockType sl (effectsLock);
+    return effectsInfo;
+}
+
+void NewProjectAudioProcessor::syncEffectsInfo() noexcept
+{
+    const juce::SpinLock::ScopedLockType sl (effectsLock);
+    effectsInfo.clear();
+	effectsInfo.reserve(effects.size());
+
+    for (auto* eff : effects)
+    {
+        if (eff)
+            effectsInfo.push_back(EffectInfo(eff->getName(), eff->isActive()));
+    }
 }
 
 //==============================================================================
@@ -159,6 +188,8 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
         effects.push_back(&reverb);
         effects.push_back(&delay);
     }
+
+    syncEffectsInfo();
 
     this->inputGain.reset();
     this->inputGain.prepare(spec);
