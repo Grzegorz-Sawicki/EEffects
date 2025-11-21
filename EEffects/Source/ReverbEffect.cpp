@@ -1,7 +1,7 @@
 #include "ReverbEffect.h"
 
-ReverbEffect::ReverbEffect(juce::AudioProcessorValueTreeState& vts) noexcept
-    : IEffect(vts)
+ReverbEffect::ReverbEffect(juce::AudioProcessorValueTreeState& vts, juce::String name) noexcept
+    : IEffect(vts, name)
 {
 }
 

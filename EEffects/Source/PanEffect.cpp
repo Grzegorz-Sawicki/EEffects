@@ -1,7 +1,7 @@
 #include "PanEffect.h"
 
-PanEffect::PanEffect (juce::AudioProcessorValueTreeState& vts, juce::String parameterIdIn) noexcept
-    : IEffect (vts), paramId (std::move (parameterIdIn))
+PanEffect::PanEffect (juce::AudioProcessorValueTreeState& vts, juce::String name, juce::String parameterIdIn) noexcept
+    : IEffect (vts, name), paramId (std::move (parameterIdIn))
 {
 }
 

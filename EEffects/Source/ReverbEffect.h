@@ -5,14 +5,12 @@
 class ReverbEffect : public IEffect
 {
 public:
-    ReverbEffect(juce::AudioProcessorValueTreeState& vts) noexcept;
+    ReverbEffect(juce::AudioProcessorValueTreeState& vts, juce::String name) noexcept;
     ~ReverbEffect() override = default;
 
     void prepare(const juce::dsp::ProcessSpec& spec) override;
     void process(juce::AudioBuffer<float>& buffer) override;
     void reset() override;
-
-    juce::String getName() const override { return "Reverb"; }
 
 private:
     juce::dsp::Reverb reverb;
