@@ -41,6 +41,8 @@ private:
     EffectsRackUI effectsRackUI;
     BasicEffectsUI basicEffectsUI;
 
+	std::vector<EffectUI*> effectUIs;
+
     ReverbUI reverbUI;
     DelayUI  delayUI;
 

@@ -19,8 +19,8 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
 {
     addAndMakeVisible(effectsListUI);
     addAndMakeVisible(effectsRackUI);
-    effectsRackUI.addAndMakeVisible(reverbUI);
-    effectsRackUI.addAndMakeVisible(delayUI);
+    //effectsRackUI.addAndMakeVisible(reverbUI);
+    //effectsRackUI.addAndMakeVisible(delayUI);
     addAndMakeVisible(basicEffectsUI);
 
     auto refreshEffectsList = [this]()
@@ -49,19 +49,17 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
         audioProcessor.setEffectActive (idx, state);
     };
 
-    effectsListUI.onRowClicked = [this] (int idx)
-    {
-        DBG ("EffectsListUI row clicked: " << idx << " -> " << audioProcessor.getEffectName (idx));
-        // TODO: implement scrolling of effectsRackUI to the effect at index `idx`
-    };
-
     effectsListUI.onRowMoved = [this, refreshEffectsList] (int fromIndex, int toIndex)
     {
         audioProcessor.moveEffect (fromIndex, toIndex);
+		effectsRackUI.moveEffectUI(fromIndex, toIndex);
         refreshEffectsList();
     };
 
     refreshEffectsList();
+	effectUIs.push_back(&reverbUI);
+	effectUIs.push_back(&delayUI);
+	effectsRackUI.setEffectUIs(effectUIs);
 
     setSize (1000, 700);
 }
@@ -90,10 +88,4 @@ void NewProjectAudioProcessorEditor::resized()
 	basicEffectsUI.setBounds(basicEffectsBounds);
 	effectsListUI.setBounds(effectsListBounds);
 	effectsRackUI.setBounds(effectsRackBounds);
-
-	auto rackLocal = effectsRackUI.getLocalBounds();
-
-	reverbUI.setBounds(rackLocal.removeFromTop(140));
-
-	delayUI.setBounds(rackLocal.removeFromTop(140));
 }

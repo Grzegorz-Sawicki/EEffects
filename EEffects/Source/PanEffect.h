@@ -5,14 +5,12 @@
 class PanEffect : public IEffect
 {
 public:
-    PanEffect (juce::AudioProcessorValueTreeState& vts, juce::String parameterId = "pan") noexcept;
+    PanEffect (juce::AudioProcessorValueTreeState& vts, juce::String name, juce::String parameterId = "pan") noexcept;
     ~PanEffect() override = default;
 
     void prepare (const juce::dsp::ProcessSpec& spec) override;
     void process (juce::AudioBuffer<float>& buffer) override;
     void reset() override;
-
-    juce::String getName() const override { return "Pan"; }
 
 private:
     juce::dsp::ProcessSpec lastSpec{};

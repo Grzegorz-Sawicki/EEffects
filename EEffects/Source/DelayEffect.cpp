@@ -1,7 +1,7 @@
 #include "DelayEffect.h"
 
-DelayEffect::DelayEffect (juce::AudioProcessorValueTreeState& vts, float maxDelaySeconds_) noexcept
-    : IEffect (vts), maxDelaySeconds (maxDelaySeconds_)
+DelayEffect::DelayEffect (juce::AudioProcessorValueTreeState& vts, juce::String name, float maxDelaySeconds_) noexcept
+    : IEffect (vts, name), maxDelaySeconds (maxDelaySeconds_)
 {
 }
 

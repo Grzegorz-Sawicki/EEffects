@@ -5,7 +5,11 @@
 class IEffect
 {
 public:
-    IEffect(juce::AudioProcessorValueTreeState& vts) noexcept : parameters(vts) {}
+    IEffect(juce::AudioProcessorValueTreeState& vts, juce::String name) noexcept : 
+        parameters(vts),
+		name(name)
+    {}
+
     virtual ~IEffect() = default;
 
     virtual void prepare(const juce::dsp::ProcessSpec& spec) = 0;
@@ -15,9 +19,10 @@ public:
     void setActive(bool a) noexcept { active = a; }
     bool isActive() const noexcept { return active; }
 
-    virtual juce::String getName() const = 0;
+    virtual juce::String getName() { return name; }
 
 protected:
     juce::AudioProcessorValueTreeState& parameters;
     bool active = true;
+    juce::String name = "";
 };

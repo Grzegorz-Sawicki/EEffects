@@ -22,11 +22,11 @@ NewProjectAudioProcessor::NewProjectAudioProcessor()
                      #endif
                        ),
        parameters (*this, nullptr, "PARAMETERS", createParameterLayout()),
-       reverb(parameters),
-       delay(parameters, 1.0f),
-       inputGain(parameters),
-       outputGain(parameters, "outputGain"),
-       outputPan(parameters)
+       reverb(parameters, "Reverb"),
+       delay(parameters, "Delay", 1.0f),
+       inputGain(parameters, "Input Gain", "inputGain"),
+       outputGain(parameters, "Output Gain", "outputGain"),
+       outputPan(parameters, "Output Pan")
 #endif
 {
 }
@@ -110,7 +110,7 @@ juce::String NewProjectAudioProcessor::getEffectName (int index) const noexcept
     const juce::SpinLock::ScopedLockType sl (effectsLock);
     if (index >= 0 && index < (int) effects.size() && effects[index] != nullptr)
         return effects[index]->getName();
-    return {};
+    return "";
 }
 
 bool NewProjectAudioProcessor::isEffectActive (int index) const noexcept
