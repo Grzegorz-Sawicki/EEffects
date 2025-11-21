@@ -14,11 +14,9 @@
 NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioProcessor& p)
     : AudioProcessorEditor (&p),
       audioProcessor (p),
-      reverbUI(p.parameters, "Reverb", "reverbBypass"),
-      delayUI(p.parameters, "Delay", "delayBypass"),
       basicEffectsUI(p.parameters),
 	  effectsListUI(audioProcessor.getEffectsInfo()),
-	  effectsRackUI(audioProcessor.getEffectsInfo())
+	  effectsRackUI(p.parameters, audioProcessor.getEffectsInfo())
 {
     addAndMakeVisible(effectsListUI);
     addAndMakeVisible(effectsRackUI);
@@ -36,9 +34,10 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
         });
     };
 
-    effectsListUI.onToggleChanged = [this] (int idx, bool state)
+    effectsListUI.onToggleChanged = [this, refreshEffectsList] (int idx, bool state)
     {
         audioProcessor.setEffectActive (idx, state);
+		refreshEffectsList();
     };
 
     effectsListUI.onRowMoved = [this, refreshEffectsList] (int fromIndex, int toIndex)
@@ -49,9 +48,6 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     };
 
     refreshEffectsList();
-	effectUIs.push_back(&reverbUI);
-	effectUIs.push_back(&delayUI);
-	effectsRackUI.setEffectUIs(effectUIs);
 
     setSize (1000, 700);
 }

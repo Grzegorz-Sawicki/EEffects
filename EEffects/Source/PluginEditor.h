@@ -41,10 +41,5 @@ private:
     EffectsRackUI effectsRackUI;
     BasicEffectsUI basicEffectsUI;
 
-	std::vector<EffectUI*> effectUIs;
-
-    ReverbUI reverbUI;
-    DelayUI  delayUI;
-
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NewProjectAudioProcessorEditor)
 };

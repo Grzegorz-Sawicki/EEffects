@@ -2,73 +2,46 @@
 
 #include <JuceHeader.h>
 #include <vector>
+#include <memory>
+#include <map>
 #include "EffectUI.h"
 #include "ReverbUI.h"
 #include "DelayUI.h"
 
-//TODO: rethink list and rack setup
-
-class EffectsRackUI : 
-    public juce::Component,
-    public juce::ListBoxModel
+class EffectsRackUI :
+    public juce::Component
 {
 public:
-    EffectsRackUI(std::vector<EffectInfo> effectsInfo) :
-		effectsInfo(effectsInfo)
+    EffectsRackUI(juce::AudioProcessorValueTreeState& vts, std::vector<EffectInfo> effectsInfo)
+        : effectsInfo(std::move(effectsInfo))
     {
-		listBox.setModel(this);
-		listBox.setRowHeight(rowHeight);
-		addAndMakeVisible(listBox);
+        addAndMakeVisible(viewport);
+        viewport.setViewedComponent(&content, false);
+        viewport.setScrollBarsShown(true, true);        
+        viewport.setScrollBarThickness(12);            
+
+        ownedEffectUIs["Reverb"] = std::make_unique<ReverbUI>(vts, "Reverb", "reverbBypass");
+        ownedEffectUIs["Delay"]  = std::make_unique<DelayUI> (vts, "Delay",  "delayBypass");
+
+        rebuildVisibleComponents();
     }
 
-	~EffectsRackUI() override = default;
+    ~EffectsRackUI() override = default;
 
-    void setEffectsInfo(std::vector<EffectInfo>& effectsInfo)
+    void setEffectsInfo(std::vector<EffectInfo>& effectsInfoIn)
     {
-        this->effectsInfo = effectsInfo;
-        listBox.updateContent();
-        listBox.repaint();
+        effectsInfo = effectsInfoIn;
+        rebuildVisibleComponents();
+        resized();
+        repaint();
     }
 
-    void addEffectUI(std::unique_ptr<EffectUI> effectUI)
+    void update()
     {
-        if (!effectUI) return;
-        auto* p = effectUI.get();
-        effectUIs.push_back(std::move(p));
+        rebuildVisibleComponents();
+        resized();
+        repaint();
     }
-
-    void update() {
-        listBox.updateContent();
-		listBox.repaint();
-    }
-
-    void moveEffectUI(int src, int dst)
-    {
-        if (src < 0 || src >= (int)effectUIs.size() ||
-            dst < 0 || dst >= (int)effectUIs.size() ||
-            src == dst)
-            return;
-
-        if (dst > src) {
-            int newDst = dst + 1;
-			std::rotate(effectUIs.begin() + src, effectUIs.begin() + src + 1, effectUIs.begin() + newDst);
-            listBox.updateContent();
-            listBox.repaint();
-        }
-        else // dst < src
-        {
-            std::rotate(effectUIs.begin() + dst,  effectUIs.begin() + src, effectUIs.begin() + src + 1);
-            listBox.updateContent();
-            listBox.repaint();
-		}
-	}   
-
-    void setEffectUIs(const std::vector<EffectUI*>& effectUIsIn)
-    {
-        effectUIs = effectUIsIn;
-        listBox.updateContent();
-		listBox.repaint();
-	}
 
     void paint(juce::Graphics& g) override
     {
@@ -77,40 +50,61 @@ public:
 
     void resized() override
     {
-        listBox.setBounds(getLocalBounds());
-	}
+        viewport.setBounds(getLocalBounds());
+
+        int totalH = static_cast<int>(visibleRowIndices.size()) * rowHeight;
+        content.setBounds(0, 0, getWidth(), totalH);
+
+        for (size_t i = 0; i < visibleRowIndices.size(); ++i)
+        {
+            int realIndex = visibleRowIndices[i];
+            const auto& name = effectsInfo[(size_t)realIndex].name;
+            auto it = ownedEffectUIs.find(name.toStdString());
+            if (it != ownedEffectUIs.end() && it->second)
+            {
+                auto* comp = it->second.get();
+                comp->setBounds(0, static_cast<int>(i) * rowHeight, getWidth(), rowHeight);
+            }
+        }
+    }
 
 private:
-    int getNumRows() override
+    void rebuildVisibleComponents()
     {
-        return static_cast<int>(effectUIs.size());
-	}
+        visibleRowIndices.clear();
+        visibleRowIndices.reserve(effectsInfo.size());
 
-    void paintListBoxItem(int rowNumber, juce::Graphics& g, int width, int height, bool rowIsSelected) override
-    {
-        // No custom painting needed as we use components
-	}
-
-    juce::Component* refreshComponentForRow(int rowNumber, bool isRowSelected, juce::Component* existingComponentToUpdate) override
-    {
-        if (isPositiveAndBelow(rowNumber, (int)effectUIs.size()))
+        for (size_t i = 0; i < effectsInfo.size(); ++i)
         {
-            EffectUI* effectUI;
-            if (effectsInfo[(size_t)rowNumber].name == "Reverb")
-                effectUI = effectUIs[0];
-			else if (effectsInfo[(size_t)rowNumber].name == "Delay")
-                effectUI = effectUIs[1];
-            else return nullptr;
-
-            return effectUI;
-
+            if (effectsInfo[i].active)
+                visibleRowIndices.push_back(static_cast<int>(i));
         }
-        return nullptr;
-	}
 
-    juce::ListBox listBox{ "EffectsRack" , this };
-	std::vector<EffectUI*> effectUIs;
+        content.removeAllChildren();
+
+        for (int realIndex : visibleRowIndices)
+        {
+            const auto& name = effectsInfo[(size_t)realIndex].name;
+            auto it = ownedEffectUIs.find(name.toStdString());
+            if (it != ownedEffectUIs.end() && it->second)
+            {
+                content.addAndMakeVisible(it->second.get());
+            }
+            else
+            {
+                
+            }
+        }
+    }
+
+    juce::Viewport viewport { "EffectsViewport" };
+    juce::Component content; 
+
+    std::map<std::string, std::unique_ptr<EffectUI>> ownedEffectUIs;
+
+    std::vector<int> visibleRowIndices;
+
     std::vector<EffectInfo> effectsInfo;
 
-	static constexpr int rowHeight = 140;
+    static constexpr int rowHeight = 140;
 };
