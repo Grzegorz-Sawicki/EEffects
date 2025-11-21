@@ -25,23 +25,32 @@ public:
         if (!effectUI) return;
         auto* p = effectUI.get();
         effectUIs.push_back(std::move(p));
-		listBox.updateContent();
-        listBox.repaint();
     }
 
-    void moveEffectUI(int fromIndex, int toIndex)
+    void update() {
+        listBox.updateContent();
+		listBox.repaint();
+    }
+
+    void moveEffectUI(int src, int dst)
     {
-        if (fromIndex < 0 || fromIndex >= (int)effectUIs.size() ||
-            toIndex < 0 || toIndex >= (int)effectUIs.size() ||
-            fromIndex == toIndex)
+        if (src < 0 || src >= (int)effectUIs.size() ||
+            dst < 0 || dst >= (int)effectUIs.size() ||
+            src == dst)
             return;
 
-		DBG("Moving effect UI from " + juce::String(fromIndex) + " to " + juce::String(toIndex));
-        auto ptr = effectUIs[(size_t)fromIndex];
-        std::swap(effectUIs[(size_t)fromIndex], effectUIs[(size_t)toIndex]);
-
-        listBox.updateContent();
-        listBox.repaint();
+        if (dst > src) {
+            int newDst = dst + 1;
+			std::rotate(effectUIs.begin() + src, effectUIs.begin() + src + 1, effectUIs.begin() + newDst);
+            listBox.updateContent();
+            listBox.repaint();
+        }
+        else // dst < src
+        {
+            std::rotate(effectUIs.begin() + dst,  effectUIs.begin() + src, effectUIs.begin() + src + 1);
+            listBox.updateContent();
+            listBox.repaint();
+		}
 	}   
 
     void setEffectUIs(const std::vector<EffectUI*>& effectUIsIn)
