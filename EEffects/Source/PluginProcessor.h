@@ -75,6 +75,10 @@ public:
     std::vector<EffectInfo> getEffectsInfo() noexcept;
 	void syncEffectsInfo() noexcept;
 
+    void addChangeListener(juce::ChangeListener* listener) { changeBroadcaster.addChangeListener(listener); }
+    void removeChangeListener(juce::ChangeListener* listener) { changeBroadcaster.removeChangeListener(listener); }
+
+
 private:
     const float smoothingTimeSeconds = 0.02f;
 
@@ -89,6 +93,8 @@ private:
 
     // lock protecting effects vector for brief GUI modifications
     mutable juce::SpinLock effectsLock;
+
+    juce::ChangeBroadcaster changeBroadcaster;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NewProjectAudioProcessor)

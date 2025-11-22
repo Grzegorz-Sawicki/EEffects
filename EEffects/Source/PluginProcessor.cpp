@@ -282,19 +282,111 @@ juce::AudioProcessorEditor* NewProjectAudioProcessor::createEditor()
 // State management
 void NewProjectAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
+    syncEffectsInfo();
+
     auto state = parameters.copyState();
     if (state.isValid())
     {
-        std::unique_ptr<juce::XmlElement> xml (state.createXml());
-        copyXmlToBinary (*xml, destData);
+        std::unique_ptr<juce::XmlElement> paramsXml (state.createXml());
+
+        std::unique_ptr<juce::XmlElement> wrapper (new juce::XmlElement ("PLUGIN_STATE"));
+        wrapper->addChildElement (paramsXml.release());
+
+        juce::XmlElement* effectsXml = new juce::XmlElement ("EffectsOrder");
+        for (const auto& info : effectsInfo)
+        {
+            juce::XmlElement* e = new juce::XmlElement ("Effect");
+            e->setAttribute ("name", info.name);
+            e->setAttribute ("active", info.active ? 1 : 0);
+            effectsXml->addChildElement (e);
+        }
+        wrapper->addChildElement (effectsXml);
+
+        copyXmlToBinary (*wrapper, destData);
     }
 }
 
 void NewProjectAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary (data, sizeInBytes));
-    if (xmlState.get() != nullptr)
-        parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
+    if (xmlState == nullptr)
+        return;
+
+    juce::XmlElement* paramsXml = xmlState->getChildByName ("PARAMETERS");
+    if (paramsXml == nullptr)
+    {
+        if (xmlState->hasTagName ("PARAMETERS"))
+            paramsXml = xmlState.get();
+    }
+
+    if (paramsXml != nullptr)
+    {
+        parameters.replaceState (juce::ValueTree::fromXml (*paramsXml));
+    }
+
+    juce::XmlElement* effectsXml = xmlState->getChildByName ("EffectsOrder");
+    if (effectsXml != nullptr)
+    {
+        std::vector<EffectInfo> requested;
+        for (auto* child = effectsXml->getFirstChildElement(); child != nullptr; child = child->getNextElement())
+        {
+            if (child->hasTagName ("Effect"))
+            {
+                juce::String name = child->getStringAttribute ("name", {});
+                bool active = child->getBoolAttribute ("active", false);
+                if (name.isNotEmpty())
+                    requested.emplace_back (name, active);
+            }
+        }
+
+        const juce::SpinLock::ScopedLockType sl (effectsLock);
+
+        std::vector<IEffect*> newEffects;
+        newEffects.reserve (requested.size());
+
+        for (const auto& info : requested)
+        {
+            auto it = std::find_if (effects.begin(), effects.end(), [&] (IEffect* e) { return e != nullptr && e->getName() == info.name; });
+            if (it != effects.end())
+            {
+                newEffects.push_back (*it);
+            }
+            else
+            {
+                
+            }
+        }
+
+        for (auto* e : effects)
+            if (std::find (newEffects.begin(), newEffects.end(), e) == newEffects.end())
+                newEffects.push_back (e);
+
+        effects = std::move (newEffects);
+
+        effectsInfo.clear();
+        effectsInfo.reserve (effects.size());
+        for (auto* e : effects)
+        {
+            bool active = true;
+            auto itReq = std::find_if (requested.begin(), requested.end(), [&] (const EffectInfo& ii) { return ii.name == e->getName(); });
+            if (itReq != requested.end())
+                active = itReq->active;
+
+            effectsInfo.emplace_back (e->getName(), active);
+        }
+
+        for (size_t i = 0; i < effects.size(); ++i)
+        {
+            if (effects[i] != nullptr)
+                effects[i]->setActive (effectsInfo[i].active);
+        }
+
+        changeBroadcaster.sendChangeMessage();
+    }
+    else
+    {
+        syncEffectsInfo();
+    }
 }
 
 //==============================================================================
