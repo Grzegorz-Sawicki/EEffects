@@ -22,7 +22,7 @@
 //==============================================================================
 /**
 */
-class NewProjectAudioProcessorEditor  : public juce::AudioProcessorEditor
+class NewProjectAudioProcessorEditor  : public juce::AudioProcessorEditor, public juce::ChangeListener
 {
 public:
     NewProjectAudioProcessorEditor (NewProjectAudioProcessor&);
@@ -32,10 +32,14 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+    void changeListenerCallback(juce::ChangeBroadcaster* source) override;
+
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     NewProjectAudioProcessor& audioProcessor;
+
+    void updateUIFromProcessor();
 
     EffectsListUI effectsListUI;
     EffectsRackUI effectsRackUI;

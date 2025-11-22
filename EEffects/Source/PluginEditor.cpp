@@ -22,38 +22,33 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     addAndMakeVisible(effectsRackUI);
     addAndMakeVisible(basicEffectsUI);
 
-    auto refreshEffectsList = [this]()
-    {
-		auto effectsInfo = audioProcessor.getEffectsInfo();
-
-        juce::MessageManager::callAsync ([this, ei = std::vector<EffectInfo>(effectsInfo)]()
-        {
-            auto eiCopy = ei;
-            effectsListUI.setEffectsInfo(eiCopy);
-			effectsRackUI.setEffectsInfo(eiCopy);
-        });
-    };
-
-    effectsListUI.onToggleChanged = [this, refreshEffectsList] (int idx, bool state)
+    effectsListUI.onToggleChanged = [this] (int idx, bool state)
     {
         audioProcessor.setEffectActive (idx, state);
-		refreshEffectsList();
+		updateUIFromProcessor();
     };
 
-    effectsListUI.onRowMoved = [this, refreshEffectsList] (int fromIndex, int toIndex)
+    effectsListUI.onRowMoved = [this] (int fromIndex, int toIndex)
     {
         audioProcessor.moveEffect (fromIndex, toIndex);
 		//effectsRackUI.moveEffectUI(fromIndex, toIndex);
-        refreshEffectsList();
+        updateUIFromProcessor();
     };
 
-    refreshEffectsList();
+    updateUIFromProcessor();
+	audioProcessor.addChangeListener(this);
 
     setSize (1000, 700);
 }
 
 NewProjectAudioProcessorEditor::~NewProjectAudioProcessorEditor()
 {
+	audioProcessor.removeChangeListener(this);
+}
+
+void NewProjectAudioProcessorEditor::changeListenerCallback(juce::ChangeBroadcaster* /*source*/)
+{
+    updateUIFromProcessor();
 }
 
 //==============================================================================
@@ -76,4 +71,16 @@ void NewProjectAudioProcessorEditor::resized()
 	basicEffectsUI.setBounds(basicEffectsBounds);
 	effectsListUI.setBounds(effectsListBounds);
 	effectsRackUI.setBounds(effectsRackBounds);
+}
+
+void NewProjectAudioProcessorEditor::updateUIFromProcessor()
+{
+    auto effectsInfo = audioProcessor.getEffectsInfo();
+
+    juce::MessageManager::callAsync([this, ei = std::vector<EffectInfo>(effectsInfo)]()
+        {
+            auto eiCopy = ei;
+            effectsListUI.setEffectsInfo(eiCopy);
+            effectsRackUI.setEffectsInfo(eiCopy);
+        });
 }
