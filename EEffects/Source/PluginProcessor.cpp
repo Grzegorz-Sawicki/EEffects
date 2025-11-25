@@ -191,6 +191,8 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
 
     syncEffectsInfo();
 
+	changeBroadcaster.sendChangeMessage();
+
     this->inputGain.reset();
     this->inputGain.prepare(spec);
     this->outputGain.reset();
