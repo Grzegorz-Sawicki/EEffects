@@ -5,17 +5,24 @@
 class GainEffect : public IEffect
 {
 public:
-    GainEffect (juce::AudioProcessorValueTreeState& vts, juce::String name, juce::String parameterId) noexcept;
+    GainEffect (juce::String name) noexcept;
     ~GainEffect() override = default;
 
     void prepare (const juce::dsp::ProcessSpec& spec) override;
-    void process (juce::AudioBuffer<float>& buffer) override;
+    void process (juce::dsp::ProcessContextNonReplacing<float> context) override;
     void reset() override;
+
+    struct GainParameters
+    {
+        float gainDb = 0.0f; // in decibels
+	};
+
+	void setParameters(const GainParameters& params);
 
 private:
     juce::dsp::Gain<float> gainProcessor;
     juce::dsp::ProcessSpec lastSpec{};
-    juce::String paramId;
 
     const float smoothingTimeSeconds = 0.02f;
+	GainParameters parameters;
 };
