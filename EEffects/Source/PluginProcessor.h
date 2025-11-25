@@ -91,6 +91,8 @@ private:
     ReverbEffect reverb;
     DelayEffect delay;
 
+    void processEffect(juce::AudioBuffer<float>& buffer, juce::AudioBuffer<float>& tempBuffer, IEffect& effect);
+
     // lock protecting effects vector for brief GUI modifications
     mutable juce::SpinLock effectsLock;
 

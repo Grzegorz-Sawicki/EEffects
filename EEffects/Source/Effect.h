@@ -11,7 +11,7 @@ public:
     virtual ~IEffect() = default;
 
     virtual void prepare(const juce::dsp::ProcessSpec& spec) = 0;
-    virtual void process(juce::dsp::ProcessContextReplacing<float> context) = 0;
+    virtual void process(juce::dsp::ProcessContextNonReplacing<float> context) = 0;
     virtual void reset() = 0;
 
     void setActive(bool a) noexcept { active = a; }

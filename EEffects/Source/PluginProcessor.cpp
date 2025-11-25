@@ -254,21 +254,44 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         localCopy = effects;
     }
 
-    juce::dsp::AudioBlock<float> block(const_cast<float**>(buffer.getArrayOfWritePointers()),
-                                       static_cast<size_t>(buffer.getNumChannels()),
-                                       static_cast<size_t>(buffer.getNumSamples()));
-    juce::dsp::ProcessContextReplacing<float> ctx(block);
+    const int numChannels = buffer.getNumChannels();
+    const int numSamples  = buffer.getNumSamples();
 
-    this->inputGain.process(ctx);
+    juce::AudioBuffer<float> tempBuffer;
+    tempBuffer.setSize(numChannels, numSamples, false, true, true);
+
+	processEffect(buffer, tempBuffer, inputGain);
 
     for (auto* eff : localCopy)
     {
-        if (eff && eff->isActive())
-            eff->process(ctx);
+        if (eff == nullptr || ! eff->isActive())
+            continue;
+
+		processEffect(buffer, tempBuffer, *eff);
     }
 
-    this->outputGain.process(ctx);
-    this->outputPan.process(ctx);
+	processEffect(buffer, tempBuffer, outputGain);
+	processEffect(buffer, tempBuffer, outputPan);
+}
+
+void NewProjectAudioProcessor::processEffect(juce::AudioBuffer<float>& buffer, juce::AudioBuffer<float>& tempBuffer, IEffect& effect) {
+	const int numChannels = buffer.getNumChannels();
+	const int numSamples = buffer.getNumSamples();
+
+    tempBuffer.clear();
+
+    juce::dsp::AudioBlock<float> inputBlock(const_cast<float**>(buffer.getArrayOfWritePointers()),
+        static_cast<size_t>(numChannels),
+        static_cast<size_t>(numSamples));
+    juce::dsp::AudioBlock<float> outputBlock(tempBuffer.getArrayOfWritePointers(),
+        static_cast<size_t>(numChannels),
+        static_cast<size_t>(numSamples));
+
+    juce::dsp::ProcessContextNonReplacing<float> ctx(inputBlock, outputBlock);
+
+    effect.process(ctx);
+    for (int ch = 0; ch < numChannels; ++ch)
+        buffer.copyFrom(ch, 0, tempBuffer, ch, 0, numSamples);
 }
 
 //==============================================================================

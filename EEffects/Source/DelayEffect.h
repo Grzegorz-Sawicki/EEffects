@@ -9,7 +9,7 @@ public:
     ~DelayEffect() override = default;
 
     void prepare (const juce::dsp::ProcessSpec& spec) override;
-    void process (juce::dsp::ProcessContextReplacing<float> context) override;
+    void process (juce::dsp::ProcessContextNonReplacing<float> context) override;
     void reset() override;
 
 private:

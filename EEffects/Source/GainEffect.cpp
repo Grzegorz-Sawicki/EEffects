@@ -21,7 +21,7 @@ void GainEffect::reset()
     gainProcessor.reset();
 }
 
-void GainEffect::process (juce::dsp::ProcessContextReplacing<float> context)
+void GainEffect::process (juce::dsp::ProcessContextNonReplacing<float> context)
 {
     if (!isActive())
         return;

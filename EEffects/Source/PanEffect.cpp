@@ -20,7 +20,7 @@ void PanEffect::reset()
 	panSmoothed.setCurrentAndTargetValue(panSmoothed.getCurrentValue());
 }
 
-void PanEffect::process (juce::dsp::ProcessContextReplacing<float> context)
+void PanEffect::process (juce::dsp::ProcessContextNonReplacing<float> context)
 {
     if (! isActive())
         return;
@@ -44,11 +44,13 @@ void PanEffect::process (juce::dsp::ProcessContextReplacing<float> context)
         const float leftGain  = std::cos (angle);
         const float rightGain = std::sin (angle);
 
-        float* leftPtr  = outputBlock.getChannelPointer (0);
-        float* rightPtr = outputBlock.getChannelPointer (1);
+	    const float* leftIn = inputBlock.getChannelPointer(0);
+		const float* rightIn = inputBlock.getChannelPointer(1);
+		float* leftOut = outputBlock.getChannelPointer(0);
+        float* rightOut = outputBlock.getChannelPointer(1);
 
-        leftPtr[i]  *= leftGain;
-        rightPtr[i] *= rightGain;
+        leftOut[i] = leftIn[i] * leftGain;
+        rightOut[i] = rightIn[i] * rightGain;
 
         for (int ch = 2; ch < numChannels; ++ch)
         {

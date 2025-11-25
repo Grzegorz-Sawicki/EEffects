@@ -19,7 +19,7 @@ void ReverbEffect::reset()
     tempBuffer.clear();
 }
 
-void ReverbEffect::process(juce::dsp::ProcessContextReplacing<float> context)
+void ReverbEffect::process(juce::dsp::ProcessContextNonReplacing<float> context)
 {
     if (!isActive())
         return;
@@ -43,34 +43,9 @@ void ReverbEffect::process(juce::dsp::ProcessContextReplacing<float> context)
     p.roomSize = room;
     p.damping = damp;
     p.width = width;
-    p.wetLevel = 1.0f;
-    p.dryLevel = 0.0f;
+    p.wetLevel = wet;
+    p.dryLevel = 1 - wet;
     reverb.setParameters(p);
 
-    auto inputBlock = context.getInputBlock();
-    const size_t numChannels = inputBlock.getNumChannels();
-    const size_t numSamples  = inputBlock.getNumSamples();
-
-    if (tempBuffer.getNumChannels() != (int)numChannels || tempBuffer.getNumSamples() < (int)numSamples)
-        tempBuffer.setSize((int)numChannels, (int)numSamples, false, true, true);
-
-    for (size_t ch = 0; ch < numChannels; ++ch)
-    {
-        const float* src = inputBlock.getChannelPointer(ch);
-        tempBuffer.copyFrom((int)ch, 0, src, (int)numSamples);
-    }
-
-    juce::dsp::AudioBlock<float> tempBlock(const_cast<float**>(tempBuffer.getArrayOfWritePointers()),
-                                           numChannels, numSamples);
-    juce::dsp::ProcessContextReplacing<float> tempCtx(tempBlock);
-    reverb.process(tempCtx);
-
-    const float dry = 1.0f - wet;
-    for (size_t ch = 0; ch < numChannels; ++ch)
-    {
-        float* dst = context.getOutputBlock().getChannelPointer(ch);
-        const float* wetp = tempBuffer.getReadPointer((int)ch);
-        for (size_t i = 0; i < numSamples; ++i)
-            dst[i] = dst[i] * dry + wetp[i] * wet;
-    }
+    reverb.process(context);
 }

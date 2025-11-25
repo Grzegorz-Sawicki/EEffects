@@ -41,7 +41,7 @@ void DelayEffect::reset()
     delayWetSmoothed.setCurrentAndTargetValue (delayWetSmoothed.getCurrentValue());
 }
 
-void DelayEffect::process (juce::dsp::ProcessContextReplacing<float> context)
+void DelayEffect::process (juce::dsp::ProcessContextNonReplacing<float> context)
 {
     if (!isActive())
         return;
@@ -75,8 +75,9 @@ void DelayEffect::process (juce::dsp::ProcessContextReplacing<float> context)
 
         for (int ch = 0; ch < numChannels; ++ch)
         {
-            auto* ptr = outputBlock.getChannelPointer (ch);
-            const float inSample = ptr[i];
+			auto* in = inputBlock.getChannelPointer(ch);
+			auto* out = outputBlock.getChannelPointer(ch);
+            const float inSample = in[i];
 
             const float delayed = delayLine.popSample (ch, delaySamples, true);
 
@@ -85,7 +86,7 @@ void DelayEffect::process (juce::dsp::ProcessContextReplacing<float> context)
 
             delayLine.pushSample (ch, writeSample);
 
-            ptr[i] = outSample;
+            out[i] = outSample;
         }
     }
 }
