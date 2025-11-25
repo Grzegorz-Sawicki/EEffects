@@ -7,16 +7,12 @@ ReverbEffect::ReverbEffect(juce::String name) noexcept
 
 void ReverbEffect::prepare(const juce::dsp::ProcessSpec& spec)
 {
-    lastSpec = spec;
-    reverb.reset();
     reverb.prepare(spec);
-    tempBuffer.setSize((int)spec.numChannels, (int)spec.maximumBlockSize);
 }
 
 void ReverbEffect::reset()
 {
     reverb.reset();
-    tempBuffer.clear();
 }
 
 void ReverbEffect::process(juce::dsp::ProcessContextNonReplacing<float> context)

@@ -22,8 +22,5 @@ public:
 
 private:
     juce::dsp::Reverb reverb;
-    juce::AudioBuffer<float> tempBuffer;
-    juce::dsp::ProcessSpec lastSpec{};
-
     ReverbParameters parameters;
 };

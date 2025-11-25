@@ -7,12 +7,12 @@
 class EffectUI : public juce::Component
 {
 public:
-    EffectUI(juce::AudioProcessorValueTreeState& vts, juce::String effectName, juce::String bypassParameter) noexcept
+    EffectUI(juce::AudioProcessorValueTreeState& vts, juce::String effectName, juce::String mixParameter, juce::String bypassParameter) noexcept
         : parameters(vts)
     {
         nameComponent = std::make_unique<NameComponent>(effectName);
         controlsComponent = std::make_unique<ControlsComponent>(parameters);
-        bypassComponent = std::make_unique<BypassComponent>(parameters, bypassParameter);
+        bypassComponent = std::make_unique<BypassComponent>(parameters, mixParameter, bypassParameter);
 
         //setSize(kComponentW, kComponentH);
 
@@ -32,7 +32,7 @@ public:
     {
         auto bounds = getLocalBounds();
         nameComponent->setBounds(bounds.removeFromLeft(bounds.getWidth() / 5));
-        bypassComponent->setBounds(bounds.removeFromRight(bounds.getWidth() / 10));
+        bypassComponent->setBounds(bounds.removeFromRight(bounds.getWidth() / 4));
         controlsComponent->setBounds(bounds);
     }
 
@@ -47,8 +47,8 @@ protected:
 private:
     static constexpr int kComponentW = 500;
     static constexpr int kComponentH = 140;
-    static constexpr int kBypassW = 24;
-    static constexpr int kBypassH = 24;
+    static constexpr int kBypassW = 32;
+    static constexpr int kBypassH = 32;
     static constexpr int kKnobSz = 80;
     static constexpr int kLabelH = 16;
     static constexpr int kPadding = 8;
@@ -130,7 +130,8 @@ private:
 
     struct BypassComponent : public juce::Component
     {
-        BypassComponent(juce::AudioProcessorValueTreeState& vts, const juce::String& bypassParameter)
+        BypassComponent(juce::AudioProcessorValueTreeState& vts, const juce::String& mixParameter, const juce::String& bypassParameter) 
+			: vtsRef(vts)
         {
             bypassButton.setColour(juce::ToggleButton::textColourId, juce::Colours::white);
             bypassButton.setWantsKeyboardFocus(false);
@@ -141,14 +142,56 @@ private:
                 bypassParameter,
                 bypassButton
             );
+
+			addMixControl("Mix", mixParameter);
         }
+
+        void addMixControl(const juce::String& labelText, const juce::String& parameterName)
+        {
+            auto slider = std::make_unique<juce::Slider>();
+            slider->setSliderStyle(juce::Slider::RotaryVerticalDrag);
+            slider->setTextBoxStyle(juce::Slider::TextBoxBelow, true, 60, 20);
+            slider->setWantsKeyboardFocus(false);
+
+            auto label = std::make_unique<juce::Label>();
+            label->setJustificationType(juce::Justification::centred);
+            label->setText(labelText, juce::dontSendNotification);
+
+            using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+            auto attachment = std::make_unique<SliderAttachment>(vtsRef, parameterName, *slider);
+
+			mixControl = ControlItem{};
+            mixControl.slider = std::move(slider);
+            mixControl.label = std::move(label);
+            mixControl.attachment = std::move(attachment);
+            mixControl.paramId = parameterName;
+
+            addAndMakeVisible(*mixControl.slider);
+            addAndMakeVisible(*mixControl.label);
+
+            resized();
+        }
+
         void resized() override
         {
-            bypassButton.setBounds(getLocalBounds());
+            auto bounds = getLocalBounds();
+            bypassButton.setBounds(bounds.removeFromRight(kBypassW).reduced(4));
+			mixControl.slider->setBounds(bounds.removeFromRight(kKnobSz).reduced(4));
+            mixControl.label->setBounds(mixControl.slider->getX(), mixControl.slider->getY(), mixControl.slider->getWidth(), kLabelH);
         }
     private:
+        struct ControlItem
+        {
+            std::unique_ptr<juce::Slider> slider;
+            std::unique_ptr<juce::Label> label;
+            std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attachment;
+            juce::String paramId;
+        };
+
         juce::ToggleButton bypassButton;
+        ControlItem mixControl;
         std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassAttach;
+        juce::AudioProcessorValueTreeState& vtsRef;
     };
 
     std::unique_ptr<NameComponent> nameComponent;
