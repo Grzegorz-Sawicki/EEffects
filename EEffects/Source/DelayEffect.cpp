@@ -1,7 +1,7 @@
 #include "DelayEffect.h"
 
-DelayEffect::DelayEffect (juce::AudioProcessorValueTreeState& vts, juce::String name, float maxDelaySeconds_) noexcept
-    : IEffect (vts, name), maxDelaySeconds (maxDelaySeconds_)
+DelayEffect::DelayEffect (juce::String name, float maxDelaySeconds_) noexcept
+    : IEffect (name), maxDelaySeconds (maxDelaySeconds_)
 {
 }
 
@@ -16,21 +16,6 @@ void DelayEffect::prepare (const juce::dsp::ProcessSpec& spec)
     delayTimeSmoothed.reset (spec.sampleRate, smoothingTimeSeconds);
     delayFeedbackSmoothed.reset (spec.sampleRate, smoothingTimeSeconds);
     delayWetSmoothed.reset (spec.sampleRate, smoothingTimeSeconds);
-
-    const float delayMs = *parameters.getRawParameterValue ("delayTimeMs");
-    const float sr = static_cast<float> (spec.sampleRate);
-    const float delaySamples = juce::jlimit (0.0f, maxDelaySeconds * sr, delayMs * sr * 0.001f);
-    delayTimeSmoothed.setCurrentAndTargetValue (delaySamples);
-
-	const float fbVal = *parameters.getRawParameterValue("delayFeedback");
-
-    const float fb = juce::jlimit (0.0f, 0.99f, fbVal);
-    delayFeedbackSmoothed.setCurrentAndTargetValue (fb);
-
-	const float wetVal = *parameters.getRawParameterValue("delayWet");
-
-    const float wet = juce::jlimit (0.0f, 1.0f, wetVal);
-    delayWetSmoothed.setCurrentAndTargetValue (wet);
 }
 
 void DelayEffect::reset()
@@ -43,28 +28,13 @@ void DelayEffect::reset()
 
 void DelayEffect::process (juce::dsp::ProcessContextNonReplacing<float> context)
 {
-    if (!isActive())
-        return;
-
-	const bool bypass = *parameters.getRawParameterValue("delayBypass") == true;
-    if (bypass)
+    if (!isActive() || parameters.bypass)
         return;
 
 	auto inputBlock = context.getInputBlock();
 	auto outputBlock = context.getOutputBlock();
     const int numChannels = inputBlock.getNumChannels();
     const int numSamples  = inputBlock.getNumSamples();
-    const float sr = static_cast<float> (lastSpec.sampleRate);
-
-    const float delayMsParam = *parameters.getRawParameterValue ("delayTimeMs");
-    const float targetDelaySamples = juce::jlimit (0.0f, maxDelaySeconds * sr, delayMsParam * sr * 0.001f);
-    delayTimeSmoothed.setTargetValue (targetDelaySamples);
-
-    const float fbParam = *parameters.getRawParameterValue ("delayFeedback");
-    delayFeedbackSmoothed.setTargetValue (juce::jlimit (0.0f, 0.99f, fbParam));
-
-    const float wetParam = *parameters.getRawParameterValue ("delayWet");
-    delayWetSmoothed.setTargetValue (juce::jlimit (0.0f, 1.0f, wetParam));
 
     for (int i = 0; i < numSamples; ++i)
     {
@@ -89,4 +59,12 @@ void DelayEffect::process (juce::dsp::ProcessContextNonReplacing<float> context)
             out[i] = outSample;
         }
     }
+}
+
+void DelayEffect::setParameters(const DelayParameters& params)
+{
+    parameters = params;
+    delayTimeSmoothed.setTargetValue(parameters.delayTimeMs * sampleRate * 0.001f);
+	delayFeedbackSmoothed.setTargetValue(parameters.feedback);
+	delayWetSmoothed.setTargetValue(parameters.wetLevel);
 }

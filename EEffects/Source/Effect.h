@@ -5,8 +5,8 @@
 class IEffect
 {
 public:
-    IEffect(juce::AudioProcessorValueTreeState& vts, juce::String name) noexcept
-        : parameters(vts), name(std::move(name)) {}
+    IEffect(juce::String name) noexcept
+        : name(std::move(name)) {}
 
     virtual ~IEffect() = default;
 
@@ -19,7 +19,6 @@ public:
     juce::String getName() const noexcept { return name; }
 
 protected:
-    juce::AudioProcessorValueTreeState& parameters;
     juce::String name;
     bool active = true;
 };

@@ -1,7 +1,7 @@
 #include "PanEffect.h"
 
-PanEffect::PanEffect (juce::AudioProcessorValueTreeState& vts, juce::String name, juce::String parameterIdIn) noexcept
-    : IEffect (vts, name), paramId (std::move (parameterIdIn))
+PanEffect::PanEffect (juce::String name) noexcept
+    : IEffect (name)
 {
 }
 
@@ -9,10 +9,6 @@ void PanEffect::prepare (const juce::dsp::ProcessSpec& spec)
 {
     lastSpec = spec;
     panSmoothed.reset (spec.sampleRate, smoothingTimeSeconds);
-
-    // initial value from parameter
-    const float panVal = *parameters.getRawParameterValue (paramId);
-    panSmoothed.setCurrentAndTargetValue (juce::jlimit (-1.0f, 1.0f, panVal));
 }
 
 void PanEffect::reset()
@@ -30,9 +26,6 @@ void PanEffect::process (juce::dsp::ProcessContextNonReplacing<float> context)
     const int numChannels = inputBlock.getNumChannels();
     const int numSamples  = inputBlock.getNumSamples();
     const float sr = static_cast<float> (lastSpec.sampleRate);
-
-    const float panParam = *parameters.getRawParameterValue (paramId);
-    panSmoothed.setTargetValue (juce::jlimit (-1.0f, 1.0f, panParam));
 
     if (numChannels < 2)
         return;
@@ -58,4 +51,10 @@ void PanEffect::process (juce::dsp::ProcessContextNonReplacing<float> context)
             // for now, leave channel as is
         }
     }
+}
+
+void PanEffect::setParameters(const PanParameters& params)
+{
+	parameters = params;
+    panSmoothed.setTargetValue(juce::jlimit(-1.0f, 1.0f, parameters.panParam));
 }

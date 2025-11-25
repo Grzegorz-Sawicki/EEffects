@@ -22,11 +22,11 @@ NewProjectAudioProcessor::NewProjectAudioProcessor()
                      #endif
                        ),
        parameters (*this, nullptr, "PARAMETERS", createParameterLayout()),
-       reverb(parameters, "Reverb"),
-       delay(parameters, "Delay", 1.0f),
-       inputGain(parameters, "Input Gain", "inputGain"),
-       outputGain(parameters, "Output Gain", "outputGain"),
-       outputPan(parameters, "Output Pan")
+       reverb("Reverb"),
+       delay("Delay", 2.0f),
+       inputGain("Input Gain"),
+       outputGain("Output Gain"),
+       outputPan("Output Pan")
 #endif
 {
 }
@@ -198,6 +198,8 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     this->outputPan.reset();
     this->outputPan.prepare(spec);
 
+    updateParameters();
+
     std::vector<IEffect*> localCopy;
     {
         const juce::SpinLock::ScopedLockType sl (effectsLock);
@@ -254,6 +256,8 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         localCopy = effects;
     }
 
+	updateParameters();
+
     const int numChannels = buffer.getNumChannels();
     const int numSamples  = buffer.getNumSamples();
 
@@ -292,6 +296,46 @@ void NewProjectAudioProcessor::processEffect(juce::AudioBuffer<float>& buffer, j
     effect.process(ctx);
     for (int ch = 0; ch < numChannels; ++ch)
         buffer.copyFrom(ch, 0, tempBuffer, ch, 0, numSamples);
+}
+
+void NewProjectAudioProcessor::updateParameters() {
+    { //Reverb parameters
+        juce::Reverb::Parameters reverbParams;
+        reverbParams.roomSize = parameters.getRawParameterValue("reverbRoom")->load();
+        reverbParams.damping = parameters.getRawParameterValue("reverbDamping")->load();
+        reverbParams.width = parameters.getRawParameterValue("reverbWidth")->load();
+        reverbParams.wetLevel = parameters.getRawParameterValue("reverbWet")->load();
+        reverbParams.dryLevel = 1.0f - reverbParams.wetLevel;
+        bool bypass = parameters.getRawParameterValue("reverbBypass")->load() > 0.5f;
+
+        ReverbEffect::ReverbParameters reverbEffectParams{ reverbParams, bypass };
+        reverb.setParameters(reverbEffectParams);
+    }
+
+    { // Pan parameters
+		PanEffect::PanParameters panParams;
+		panParams.panParam = parameters.getRawParameterValue("pan")->load();
+		outputPan.setParameters(panParams);
+    }
+
+    { // Gain parameters
+		GainEffect::GainParameters inGainParams;
+		inGainParams.gainDb = parameters.getRawParameterValue("inputGain")->load();
+		inputGain.setParameters(inGainParams);
+
+		GainEffect::GainParameters outGainParams;
+		outGainParams.gainDb = parameters.getRawParameterValue("outputGain")->load();
+		outputGain.setParameters(outGainParams);
+    }
+
+    { // Delay parameters
+		DelayEffect::DelayParameters delayParams;
+		delayParams.delayTimeMs = parameters.getRawParameterValue("delayTimeMs")->load();
+		delayParams.feedback = parameters.getRawParameterValue("delayFeedback")->load();
+		delayParams.wetLevel = parameters.getRawParameterValue("delayWet")->load();
+		delayParams.bypass = parameters.getRawParameterValue("delayBypass")->load() > 0.5f;
+		delay.setParameters(delayParams);
+    }
 }
 
 //==============================================================================

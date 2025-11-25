@@ -1,7 +1,7 @@
 #include "GainEffect.h"
 
-GainEffect::GainEffect (juce::AudioProcessorValueTreeState& vts, juce::String name, juce::String parameterIdIn) noexcept
-    : IEffect (vts, name), paramId (std::move (parameterIdIn))
+GainEffect::GainEffect (juce::String name) noexcept
+    : IEffect (name)
 {
 }
 
@@ -11,9 +11,6 @@ void GainEffect::prepare (const juce::dsp::ProcessSpec& spec)
     gainProcessor.reset();
     gainProcessor.prepare (spec);
     gainProcessor.setRampDurationSeconds (smoothingTimeSeconds);
-
-    if (auto* raw = parameters.getRawParameterValue (paramId))
-        gainProcessor.setGainDecibels (raw->load());
 }
 
 void GainEffect::reset()
@@ -23,11 +20,12 @@ void GainEffect::reset()
 
 void GainEffect::process (juce::dsp::ProcessContextNonReplacing<float> context)
 {
-    if (!isActive())
-        return;
-
-    const float gainDb = *parameters.getRawParameterValue (paramId);
-    gainProcessor.setGainDecibels (gainDb);
-
+    if (!isActive()) return;
     gainProcessor.process (context);
+}
+
+void GainEffect::setParameters(const GainParameters& params)
+{
+    parameters = params;
+	gainProcessor.setGainDecibels(parameters.gainDb);
 }
