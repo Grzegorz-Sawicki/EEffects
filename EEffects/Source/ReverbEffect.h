@@ -9,7 +9,7 @@ public:
     ~ReverbEffect() override = default;
 
     void prepare(const juce::dsp::ProcessSpec& spec) override;
-    void process(juce::AudioBuffer<float>& buffer) override;
+    void process(juce::dsp::ProcessContextReplacing<float> context) override; // dostosowane
     void reset() override;
 
 private:

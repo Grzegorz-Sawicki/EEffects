@@ -20,24 +20,23 @@ void PanEffect::reset()
 	panSmoothed.setCurrentAndTargetValue(panSmoothed.getCurrentValue());
 }
 
-void PanEffect::process (juce::AudioBuffer<float>& buffer)
+void PanEffect::process (juce::dsp::ProcessContextReplacing<float> context)
 {
     if (! isActive())
         return;
 
-    const int numChannels = buffer.getNumChannels();
-    const int numSamples  = buffer.getNumSamples();
+	auto inputBlock = context.getInputBlock();
+	auto outputBlock = context.getOutputBlock();
+    const int numChannels = inputBlock.getNumChannels();
+    const int numSamples  = inputBlock.getNumSamples();
     const float sr = static_cast<float> (lastSpec.sampleRate);
 
-    // Set smoothing target once per block
     const float panParam = *parameters.getRawParameterValue (paramId);
     panSmoothed.setTargetValue (juce::jlimit (-1.0f, 1.0f, panParam));
 
-    // If mono -> do nothing (or expand to stereo if you want)
     if (numChannels < 2)
         return;
 
-    // per-sample equal-power panning
     for (int i = 0; i < numSamples; ++i)
     {
         const float pan = panSmoothed.getNextValue(); // -1..1
@@ -45,13 +44,12 @@ void PanEffect::process (juce::AudioBuffer<float>& buffer)
         const float leftGain  = std::cos (angle);
         const float rightGain = std::sin (angle);
 
-        float* leftPtr  = buffer.getWritePointer (0);
-        float* rightPtr = buffer.getWritePointer (1);
+        float* leftPtr  = outputBlock.getChannelPointer (0);
+        float* rightPtr = outputBlock.getChannelPointer (1);
 
         leftPtr[i]  *= leftGain;
         rightPtr[i] *= rightGain;
 
-        // if more channels (surround), keep others unchanged (or copy one channel)
         for (int ch = 2; ch < numChannels; ++ch)
         {
             // optional: apply center/pan algorithm for additional channels;

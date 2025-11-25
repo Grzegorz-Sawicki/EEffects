@@ -41,7 +41,7 @@ void DelayEffect::reset()
     delayWetSmoothed.setCurrentAndTargetValue (delayWetSmoothed.getCurrentValue());
 }
 
-void DelayEffect::process (juce::AudioBuffer<float>& buffer)
+void DelayEffect::process (juce::dsp::ProcessContextReplacing<float> context)
 {
     if (!isActive())
         return;
@@ -50,8 +50,10 @@ void DelayEffect::process (juce::AudioBuffer<float>& buffer)
     if (bypass)
         return;
 
-    const int numChannels = buffer.getNumChannels();
-    const int numSamples  = buffer.getNumSamples();
+	auto inputBlock = context.getInputBlock();
+	auto outputBlock = context.getOutputBlock();
+    const int numChannels = inputBlock.getNumChannels();
+    const int numSamples  = inputBlock.getNumSamples();
     const float sr = static_cast<float> (lastSpec.sampleRate);
 
     const float delayMsParam = *parameters.getRawParameterValue ("delayTimeMs");
@@ -73,7 +75,7 @@ void DelayEffect::process (juce::AudioBuffer<float>& buffer)
 
         for (int ch = 0; ch < numChannels; ++ch)
         {
-            auto* ptr = buffer.getWritePointer (ch);
+            auto* ptr = outputBlock.getChannelPointer (ch);
             const float inSample = ptr[i];
 
             const float delayed = delayLine.popSample (ch, delaySamples, true);

@@ -21,21 +21,13 @@ void GainEffect::reset()
     gainProcessor.reset();
 }
 
-void GainEffect::process (juce::AudioBuffer<float>& buffer)
+void GainEffect::process (juce::dsp::ProcessContextReplacing<float> context)
 {
-    if (! isActive())
+    if (!isActive())
         return;
-
-    const int numChannels = buffer.getNumChannels();
-    const int numSamples  = buffer.getNumSamples();
 
     const float gainDb = *parameters.getRawParameterValue (paramId);
     gainProcessor.setGainDecibels (gainDb);
 
-    juce::dsp::AudioBlock<float> block (const_cast<float**> (buffer.getArrayOfWritePointers()),
-                                        static_cast<size_t> (numChannels),
-                                        static_cast<size_t> (numSamples));
-
-    juce::dsp::ProcessContextReplacing<float> ctx (block);
-    gainProcessor.process (ctx);
+    gainProcessor.process (context);
 }

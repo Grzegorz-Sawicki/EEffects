@@ -248,22 +248,27 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    this->inputGain.process(buffer);
-
     std::vector<IEffect*> localCopy;
     {
         const juce::SpinLock::ScopedLockType sl (effectsLock);
         localCopy = effects;
     }
 
+    juce::dsp::AudioBlock<float> block(const_cast<float**>(buffer.getArrayOfWritePointers()),
+                                       static_cast<size_t>(buffer.getNumChannels()),
+                                       static_cast<size_t>(buffer.getNumSamples()));
+    juce::dsp::ProcessContextReplacing<float> ctx(block);
+
+    this->inputGain.process(ctx);
+
     for (auto* eff : localCopy)
     {
         if (eff && eff->isActive())
-            eff->process(buffer);
+            eff->process(ctx);
     }
 
-	this->outputGain.process(buffer);
-	this->outputPan.process(buffer);
+    this->outputGain.process(ctx);
+    this->outputPan.process(ctx);
 }
 
 //==============================================================================

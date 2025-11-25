@@ -19,7 +19,7 @@ void ReverbEffect::reset()
     tempBuffer.clear();
 }
 
-void ReverbEffect::process(juce::AudioBuffer<float>& buffer)
+void ReverbEffect::process(juce::dsp::ProcessContextReplacing<float> context)
 {
     if (!isActive())
         return;
@@ -28,16 +28,13 @@ void ReverbEffect::process(juce::AudioBuffer<float>& buffer)
     if (bypass)
         return;
 
-    const int numChannels = buffer.getNumChannels();
-    const int numSamples = buffer.getNumSamples();
-
-	const float wetParam = *parameters.getRawParameterValue("reverbWet");
-	const float roomParam = *parameters.getRawParameterValue("reverbRoom");
-	const float dampParam = *parameters.getRawParameterValue("reverbDamping");
-	const float widthParam = *parameters.getRawParameterValue("reverbWidth");
-
     // read parameters
-    const float wet = juce::jlimit(0.0f, 1.0f, wetParam);
+    const float wetParam = *parameters.getRawParameterValue("reverbWet");
+    const float roomParam = *parameters.getRawParameterValue("reverbRoom");
+    const float dampParam = *parameters.getRawParameterValue("reverbDamping");
+    const float widthParam = *parameters.getRawParameterValue("reverbWidth");
+
+    const float wet  = juce::jlimit(0.0f, 1.0f, wetParam);
     const float room = juce::jlimit(0.0f, 1.0f, roomParam);
     const float damp = juce::jlimit(0.0f, 1.0f, dampParam);
     const float width = juce::jlimit(0.0f, 1.0f, widthParam);
@@ -50,29 +47,30 @@ void ReverbEffect::process(juce::AudioBuffer<float>& buffer)
     p.dryLevel = 0.0f;
     reverb.setParameters(p);
 
-    // ensure temp buffer size
-    if (tempBuffer.getNumChannels() != numChannels || tempBuffer.getNumSamples() < numSamples)
-        tempBuffer.setSize(numChannels, numSamples, false, true, true);
+    auto inputBlock = context.getInputBlock();
+    const size_t numChannels = inputBlock.getNumChannels();
+    const size_t numSamples  = inputBlock.getNumSamples();
 
-    // copy dry -> temp, process reverb on temp, then mix according to wet
-    for (int ch = 0; ch < numChannels; ++ch)
-        tempBuffer.copyFrom(ch, 0, buffer, ch, 0, numSamples);
+    if (tempBuffer.getNumChannels() != (int)numChannels || tempBuffer.getNumSamples() < (int)numSamples)
+        tempBuffer.setSize((int)numChannels, (int)numSamples, false, true, true);
 
+    for (size_t ch = 0; ch < numChannels; ++ch)
     {
-        juce::dsp::AudioBlock<float> block(const_cast<float**>(tempBuffer.getArrayOfWritePointers()),
-            (size_t)numChannels,
-            (size_t)numSamples);
-
-        juce::dsp::ProcessContextReplacing<float> ctx(block);
-        reverb.process(ctx);
+        const float* src = inputBlock.getChannelPointer(ch);
+        tempBuffer.copyFrom((int)ch, 0, src, (int)numSamples);
     }
 
+    juce::dsp::AudioBlock<float> tempBlock(const_cast<float**>(tempBuffer.getArrayOfWritePointers()),
+                                           numChannels, numSamples);
+    juce::dsp::ProcessContextReplacing<float> tempCtx(tempBlock);
+    reverb.process(tempCtx);
+
     const float dry = 1.0f - wet;
-    for (int ch = 0; ch < numChannels; ++ch)
+    for (size_t ch = 0; ch < numChannels; ++ch)
     {
-        auto* dst = buffer.getWritePointer(ch);
-        auto* wetp = tempBuffer.getReadPointer(ch);
-        for (int i = 0; i < numSamples; ++i)
+        float* dst = context.getOutputBlock().getChannelPointer(ch);
+        const float* wetp = tempBuffer.getReadPointer((int)ch);
+        for (size_t i = 0; i < numSamples; ++i)
             dst[i] = dst[i] * dry + wetp[i] * wet;
     }
 }
