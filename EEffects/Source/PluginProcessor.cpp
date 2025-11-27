@@ -26,7 +26,8 @@ NewProjectAudioProcessor::NewProjectAudioProcessor()
        delay("Delay", 2.0f),
        inputGain("Input Gain"),
        outputGain("Output Gain"),
-       outputPan("Output Pan")
+       outputPan("Output Pan"),
+	   filter("Filter")
 #endif
 {
 }
@@ -187,6 +188,7 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
         effects.clear();
         effects.push_back(&reverb);
         effects.push_back(&delay);
+		effects.push_back(&filter);
     }
 
     syncEffectsInfo();
@@ -199,8 +201,6 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
     this->outputGain.prepare(spec);
     this->outputPan.reset();
     this->outputPan.prepare(spec);
-
-    updateParameters();
 
     std::vector<IEffect*> localCopy;
     {
@@ -216,6 +216,8 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
             eff->prepare(spec);
         }
     }
+
+    updateParameters();
 }
 
 void NewProjectAudioProcessor::releaseResources()
@@ -337,6 +339,14 @@ void NewProjectAudioProcessor::updateParameters() {
 		delayParams.wetLevel = parameters.getRawParameterValue(ID::delayMix)->load();
 		delayParams.bypass = parameters.getRawParameterValue(ID::delayBypass)->load() > 0.5f;
 		delay.setParameters(delayParams);
+    }
+
+    { // Filter parameters
+        FilterEffect::FilterParameters filterParams;
+        filterParams.cutoffFrequency = parameters.getRawParameterValue(ID::filterCutoff)->load();
+        filterParams.resonance = parameters.getRawParameterValue(ID::filterResonance)->load();
+        filterParams.bypass = parameters.getRawParameterValue(ID::filterBypass)->load() > 0.5f;
+		filter.setParameters(filterParams);
     }
 }
 
@@ -475,32 +485,32 @@ juce::AudioProcessorValueTreeState::ParameterLayout NewProjectAudioProcessor::cr
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+    params.push_back(std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ID::inputGain,  1 }, ID::inputGainName,
         juce::NormalisableRange<float> (-24.0f, 24.0f, 0.01f), 0.0f));
 
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+    params.push_back(std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ID::outputGain, 1 }, ID::outputGainName             ,
         juce::NormalisableRange<float> (-24.0f, 24.0f, 0.01f), 0.0f));
 
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+    params.push_back(std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ID::pan, 1 }, ID::panName,
         juce::NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0f));
 
     // Reverb parameters
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+    params.push_back(std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ID::reverbMix, 1 }, ID::reverbMix,
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.30f));
 
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+    params.push_back(std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ID::reverbRoom, 1 }, ID::reverbRoomName,
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.50f));
 
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+    params.push_back(std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ID::reverbDamping, 1 }, ID::reverbDampingName,
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.50f));
 
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+    params.push_back(std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ID::reverbWidth, 1 }, ID::reverbWidthName,
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 1.0f));
 
@@ -508,20 +518,32 @@ juce::AudioProcessorValueTreeState::ParameterLayout NewProjectAudioProcessor::cr
         juce::ParameterID{ ID::reverbBypass, 1 }, ID::reverbBypassName, false));
 
     // Delay parameters
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+    params.push_back(std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ID::delayTimeMs, 1 }, ID::delayTimeMsName,
         juce::NormalisableRange<float> (1.0f, 2000.0f, 0.1f), 500.0f));
 
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+    params.push_back(std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ID::delayFeedback, 1 }, ID::delayFeedbackName,
         juce::NormalisableRange<float> (0.0f, 0.98f, 0.001f), 0.35f));
 
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
+    params.push_back(std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ID::delayMix, 1 }, ID::delayMixName,
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.25f));
 
     params.push_back(std::make_unique<juce::AudioParameterBool>(
         juce::ParameterID{ ID::delayBypass, 1 }, ID::delayBypassName, false));
+
+    //Filter parameters
+    params.push_back(std::make_unique<juce::AudioParameterFloat> (
+        juce::ParameterID { ID::filterCutoff, 1 }, ID::filterCutoffName,
+		juce::NormalisableRange<float>(20.0f, 20000.0f, 1.0f, 0.5f), 20000.0f));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat> (
+		juce::ParameterID{ ID::filterResonance, 1 }, ID::filterResonanceName,
+		juce::NormalisableRange<float>(0.1f, 10.0f, 0.01f), 1.0f));
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+		juce::ParameterID{ ID::filterBypass, 1 }, ID::filterBypassName, false));
 
     return { params.begin(), params.end() };
 }

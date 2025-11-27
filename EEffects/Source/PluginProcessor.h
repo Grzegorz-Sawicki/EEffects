@@ -15,6 +15,7 @@
 #include "GainEffect.h"
 #include "PanEffect.h"
 #include "EffectInfo.h"
+#include "FilterEffect.h"
 
 namespace ID
 {
@@ -35,6 +36,10 @@ namespace ID
     PARAMETER_ID(delayMix)
 	PARAMETER_ID(delayBypass)
 
+    PARAMETER_ID(filterCutoff)
+    PARAMETER_ID(filterResonance)
+	PARAMETER_ID(filterBypass)
+
 	constexpr const char* inputGainName = "Input Gain";
     constexpr const char* outputGainName = "Output Gain";
     constexpr const char* panName = "Pan";
@@ -49,6 +54,10 @@ namespace ID
     constexpr const char* delayFeedbackName = "Delay Feedback";
     constexpr const char* delayMixName = "Delay Mix";
     constexpr const char* delayBypassName = "Delay Bypass";
+
+	constexpr const char* filterCutoffName = "Filter Cutoff Frequency";
+	constexpr const char* filterResonanceName = "Filter Resonance";
+	constexpr const char* filterBypassName = "Filter Bypass";
 
     #undef PARAMETER_ID
 }
@@ -127,6 +136,7 @@ private:
     PanEffect outputPan;
     ReverbEffect reverb;
     DelayEffect delay;
+    FilterEffect filter;
 
     void processEffect(juce::AudioBuffer<float>& buffer, juce::AudioBuffer<float>& tempBuffer, IEffect& effect);
     void updateParameters();
