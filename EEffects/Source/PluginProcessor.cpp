@@ -303,12 +303,12 @@ void NewProjectAudioProcessor::processEffect(juce::AudioBuffer<float>& buffer, j
 void NewProjectAudioProcessor::updateParameters() {
     { //Reverb parameters
         juce::Reverb::Parameters reverbParams;
-        reverbParams.roomSize = parameters.getRawParameterValue("reverbRoom")->load();
-        reverbParams.damping = parameters.getRawParameterValue("reverbDamping")->load();
-        reverbParams.width = parameters.getRawParameterValue("reverbWidth")->load();
-        reverbParams.wetLevel = parameters.getRawParameterValue("reverbWet")->load();
+        reverbParams.roomSize = parameters.getRawParameterValue(ID::reverbRoom)->load();
+        reverbParams.damping = parameters.getRawParameterValue(ID::reverbDamping)->load();
+        reverbParams.width = parameters.getRawParameterValue(ID::reverbWidth)->load();
+        reverbParams.wetLevel = parameters.getRawParameterValue(ID::reverbMix)->load();
         reverbParams.dryLevel = 1.0f - reverbParams.wetLevel;
-        bool bypass = parameters.getRawParameterValue("reverbBypass")->load() > 0.5f;
+        bool bypass = parameters.getRawParameterValue(ID::reverbBypass)->load() > 0.5f;
 
         ReverbEffect::ReverbParameters reverbEffectParams{ reverbParams, bypass };
         reverb.setParameters(reverbEffectParams);
@@ -316,26 +316,26 @@ void NewProjectAudioProcessor::updateParameters() {
 
     { // Pan parameters
 		PanEffect::PanParameters panParams;
-		panParams.panParam = parameters.getRawParameterValue("pan")->load();
+		panParams.panParam = parameters.getRawParameterValue(ID::pan)->load();
 		outputPan.setParameters(panParams);
     }
 
     { // Gain parameters
 		GainEffect::GainParameters inGainParams;
-		inGainParams.gainDb = parameters.getRawParameterValue("inputGain")->load();
+		inGainParams.gainDb = parameters.getRawParameterValue(ID::inputGain)->load();
 		inputGain.setParameters(inGainParams);
 
 		GainEffect::GainParameters outGainParams;
-		outGainParams.gainDb = parameters.getRawParameterValue("outputGain")->load();
+		outGainParams.gainDb = parameters.getRawParameterValue(ID::outputGain)->load();
 		outputGain.setParameters(outGainParams);
     }
 
     { // Delay parameters
 		DelayEffect::DelayParameters delayParams;
-		delayParams.delayTimeMs = parameters.getRawParameterValue("delayTimeMs")->load();
-		delayParams.feedback = parameters.getRawParameterValue("delayFeedback")->load();
-		delayParams.wetLevel = parameters.getRawParameterValue("delayWet")->load();
-		delayParams.bypass = parameters.getRawParameterValue("delayBypass")->load() > 0.5f;
+		delayParams.delayTimeMs = parameters.getRawParameterValue(ID::delayTimeMs)->load();
+		delayParams.feedback = parameters.getRawParameterValue(ID::delayFeedback)->load();
+		delayParams.wetLevel = parameters.getRawParameterValue(ID::delayMix)->load();
+		delayParams.bypass = parameters.getRawParameterValue(ID::delayBypass)->load() > 0.5f;
 		delay.setParameters(delayParams);
     }
 }
@@ -476,52 +476,52 @@ juce::AudioProcessorValueTreeState::ParameterLayout NewProjectAudioProcessor::cr
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "inputGain",  1 }, "Input Gain",
+        juce::ParameterID { ID::inputGain,  1 }, ID::inputGainName,
         juce::NormalisableRange<float> (-24.0f, 24.0f, 0.01f), 0.0f));
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "outputGain", 1 }, "Output Gain",
+        juce::ParameterID { ID::outputGain, 1 }, ID::outputGainName             ,
         juce::NormalisableRange<float> (-24.0f, 24.0f, 0.01f), 0.0f));
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "pan", 1 }, "Pan",
+        juce::ParameterID { ID::pan, 1 }, ID::panName,
         juce::NormalisableRange<float> (-1.0f, 1.0f, 0.001f), 0.0f));
 
     // Reverb parameters
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "reverbWet", 1 }, "Reverb Wet",
+        juce::ParameterID { ID::reverbMix, 1 }, ID::reverbMix,
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.30f));
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "reverbRoom", 1 }, "Reverb Room Size",
+        juce::ParameterID { ID::reverbRoom, 1 }, ID::reverbRoomName,
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.50f));
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "reverbDamping", 1 }, "Reverb Damping",
+        juce::ParameterID { ID::reverbDamping, 1 }, ID::reverbDampingName,
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.50f));
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "reverbWidth", 1 }, "Reverb Width",
+        juce::ParameterID { ID::reverbWidth, 1 }, ID::reverbWidthName,
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 1.0f));
 
     params.push_back(std::make_unique<juce::AudioParameterBool>(
-        juce::ParameterID{ "reverbBypass", 1 }, "Reverb Bypass", false));
+        juce::ParameterID{ ID::reverbBypass, 1 }, ID::reverbBypassName, false));
 
     // Delay parameters
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "delayTimeMs", 1 }, "Delay Time (ms)",
+        juce::ParameterID { ID::delayTimeMs, 1 }, ID::delayTimeMsName,
         juce::NormalisableRange<float> (1.0f, 2000.0f, 0.1f), 500.0f));
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "delayFeedback", 1 }, "Delay Feedback",
+        juce::ParameterID { ID::delayFeedback, 1 }, ID::delayFeedbackName,
         juce::NormalisableRange<float> (0.0f, 0.98f, 0.001f), 0.35f));
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        juce::ParameterID { "delayWet", 1 }, "Delay Wet",
+        juce::ParameterID { ID::delayMix, 1 }, ID::delayMixName,
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.25f));
 
     params.push_back(std::make_unique<juce::AudioParameterBool>(
-        juce::ParameterID{ "delayBypass", 1 }, "Delay Bypass", false));
+        juce::ParameterID{ ID::delayBypass, 1 }, ID::delayBypassName, false));
 
     return { params.begin(), params.end() };
 }

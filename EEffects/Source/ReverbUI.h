@@ -8,9 +8,9 @@ public:
 	ReverbUI(juce::AudioProcessorValueTreeState& vts, juce::String effectName, juce::String mixParameter, juce::String bypassParameter) :
 		EffectUI(vts, effectName, mixParameter, bypassParameter)
 	{
-		this->addControl("Room", "reverbRoom");
-		this->addControl("Damp", "reverbDamping");
-		this->addControl("Width", "reverbWidth");
+		this->addControl("Room", ID::reverbRoom);
+		this->addControl("Damp", ID::reverbDamping);
+		this->addControl("Width", ID::reverbWidth);
 	}
 
 	~ReverbUI() override = default;

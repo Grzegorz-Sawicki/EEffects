@@ -16,6 +16,43 @@
 #include "PanEffect.h"
 #include "EffectInfo.h"
 
+namespace ID
+{
+    #define PARAMETER_ID(str) constexpr const char* str { #str };
+
+    PARAMETER_ID(inputGain)
+    PARAMETER_ID(outputGain)
+    PARAMETER_ID(pan)
+
+    PARAMETER_ID(reverbRoom)
+    PARAMETER_ID(reverbDamping)
+    PARAMETER_ID(reverbMix)
+    PARAMETER_ID(reverbWidth)
+    PARAMETER_ID(reverbBypass)
+
+    PARAMETER_ID(delayTimeMs)
+    PARAMETER_ID(delayFeedback)
+    PARAMETER_ID(delayMix)
+	PARAMETER_ID(delayBypass)
+
+	constexpr const char* inputGainName = "Input Gain";
+    constexpr const char* outputGainName = "Output Gain";
+    constexpr const char* panName = "Pan";
+
+    constexpr const char* reverbRoomName = "Reverb Room Size";
+    constexpr const char* reverbDampingName = "Reverb Damping";
+    constexpr const char* reverbMixName = "Reverb Mix Level";
+    constexpr const char* reverbWidthName = "Reverb Width";
+    constexpr const char* reverbBypassName = "Reverb Bypass";
+
+    constexpr const char* delayTimeMsName = "Delay Time (ms)";
+    constexpr const char* delayFeedbackName = "Delay Feedback";
+    constexpr const char* delayMixName = "Delay Mix";
+    constexpr const char* delayBypassName = "Delay Bypass";
+
+    #undef PARAMETER_ID
+}
+
 //==============================================================================
 /**
 */
