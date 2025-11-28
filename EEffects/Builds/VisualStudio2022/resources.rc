@@ -16,9 +16,9 @@ BEGIN
     BLOCK "040904E4"
     BEGIN
       VALUE "CompanyName",  "ee\0"
-      VALUE "FileDescription",  "JuceProject\0"
+      VALUE "FileDescription",  "EEffects\0"
       VALUE "FileVersion",  "1.0.0\0"
-      VALUE "ProductName",  "JuceProject\0"
+      VALUE "ProductName",  "EEffects\0"
       VALUE "ProductVersion",  "1.0.0\0"
     END
   END

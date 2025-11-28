@@ -41,10 +41,10 @@
  #define JucePlugin_Enable_ARA             0
 #endif
 #ifndef  JucePlugin_Name
- #define JucePlugin_Name                   "JuceProject"
+ #define JucePlugin_Name                   "EEffects"
 #endif
 #ifndef  JucePlugin_Desc
- #define JucePlugin_Desc                   "JuceProject"
+ #define JucePlugin_Desc                   "EEffects"
 #endif
 #ifndef  JucePlugin_Manufacturer
  #define JucePlugin_Manufacturer           "ee"
@@ -101,19 +101,19 @@
  #define JucePlugin_AUSubType              JucePlugin_PluginCode
 #endif
 #ifndef  JucePlugin_AUExportPrefix
- #define JucePlugin_AUExportPrefix         JuceProjectAU
+ #define JucePlugin_AUExportPrefix         EEffectsAU
 #endif
 #ifndef  JucePlugin_AUExportPrefixQuoted
- #define JucePlugin_AUExportPrefixQuoted   "JuceProjectAU"
+ #define JucePlugin_AUExportPrefixQuoted   "EEffectsAU"
 #endif
 #ifndef  JucePlugin_AUManufacturerCode
  #define JucePlugin_AUManufacturerCode     JucePlugin_ManufacturerCode
 #endif
 #ifndef  JucePlugin_CFBundleIdentifier
- #define JucePlugin_CFBundleIdentifier     com.ee.JuceProject
+ #define JucePlugin_CFBundleIdentifier     com.ee.EEffects
 #endif
 #ifndef  JucePlugin_AAXIdentifier
- #define JucePlugin_AAXIdentifier          com.ee.JuceProject
+ #define JucePlugin_AAXIdentifier          com.ee.EEffects
 #endif
 #ifndef  JucePlugin_AAXManufacturerCode
  #define JucePlugin_AAXManufacturerCode    JucePlugin_ManufacturerCode
@@ -137,7 +137,7 @@
  #define JucePlugin_IAASubType             JucePlugin_PluginCode
 #endif
 #ifndef  JucePlugin_IAAName
- #define JucePlugin_IAAName                "ee: JuceProject"
+ #define JucePlugin_IAAName                "ee: EEffects"
 #endif
 #ifndef  JucePlugin_VSTNumMidiInputs
  #define JucePlugin_VSTNumMidiInputs       16
@@ -152,10 +152,10 @@
  #define JucePlugin_ARATransformationFlags  0
 #endif
 #ifndef  JucePlugin_ARAFactoryID
- #define JucePlugin_ARAFactoryID           "com.ee.JuceProject.factory"
+ #define JucePlugin_ARAFactoryID           "com.ee.EEffects.factory"
 #endif
 #ifndef  JucePlugin_ARADocumentArchiveID
- #define JucePlugin_ARADocumentArchiveID   "com.ee.JuceProject.aradocumentarchive.1.0.0"
+ #define JucePlugin_ARADocumentArchiveID   "com.ee.EEffects.aradocumentarchive.1.0.0"
 #endif
 #ifndef  JucePlugin_ARACompatibleArchiveIDs
  #define JucePlugin_ARACompatibleArchiveIDs  ""

@@ -145,14 +145,14 @@ if not exist &quot;$(OutDir)\NewProject.vst3\Contents\Resources\&quot; (
 )
 &quot;$(SolutionDir)$(Platform)\$(Configuration)\VST3 Manifest Helper\juce_vst3_helper.exe&quot; &gt; &quot;$(OutDir)\NewProject.vst3\Contents\Resources\moduleinfo.json&quot;
 if %ERRORLEVEL% equ 0 (
-    echo : Info: Successfully generated a manifest for JuceProject
+    echo : Info: Successfully generated a manifest for EEffects
     goto :_continue
 ) else (
     echo : Info: The manifest helper failed
     goto :_continue
 )
 :_arch_mismatch
-echo : Info: VST3 manifest generation is disabled for JuceProject because a AMD64 manifest helper cannot run on a host system processor detected to be $(PROCESSOR_ARCHITECTURE).
+echo : Info: VST3 manifest generation is disabled for EEffects because a AMD64 manifest helper cannot run on a host system processor detected to be $(PROCESSOR_ARCHITECTURE).
 :_continue
 </Command>
     </PostBuildEvent>
@@ -247,14 +247,14 @@ if not exist &quot;$(OutDir)\NewProject.vst3\Contents\Resources\&quot; (
 )
 &quot;$(SolutionDir)$(Platform)\$(Configuration)\VST3 Manifest Helper\juce_vst3_helper.exe&quot; &gt; &quot;$(OutDir)\NewProject.vst3\Contents\Resources\moduleinfo.json&quot;
 if %ERRORLEVEL% equ 0 (
-    echo : Info: Successfully generated a manifest for JuceProject
+    echo : Info: Successfully generated a manifest for EEffects
     goto :_continue
 ) else (
     echo : Info: The manifest helper failed
     goto :_continue
 )
 :_arch_mismatch
-echo : Info: VST3 manifest generation is disabled for JuceProject because a AMD64 manifest helper cannot run on a host system processor detected to be $(PROCESSOR_ARCHITECTURE).
+echo : Info: VST3 manifest generation is disabled for EEffects because a AMD64 manifest helper cannot run on a host system processor detected to be $(PROCESSOR_ARCHITECTURE).
 :_continue
 </Command>
     </PostBuildEvent>

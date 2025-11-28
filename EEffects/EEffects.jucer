@@ -2,13 +2,48 @@
 
 <JUCERPROJECT id="SEwi9v" name="EEffects" projectType="audioplug" jucerFormatVersion="1"
               companyName="ee" pluginFormats="buildStandalone,buildVST3" pluginAUMainType="'aufx'"
-              pluginVST3Category="Fx">
+              pluginVST3Category="Fx" includeBinaryInJuceHeader="1">
   <MAINGROUP id="h2BHT0" name="EEffects">
     <GROUP id="{5B96E18C-FE98-1099-1E56-6FB1ABCA4B21}" name="Source">
+      <GROUP id="{5ADD9E68-81D0-5D6A-A01B-0043B2AFFC26}" name="effectUIs">
+        <FILE id="zcz5lt" name="BasicEffectsUI.cpp" compile="1" resource="0"
+              file="Source/BasicEffectsUI.cpp"/>
+        <FILE id="ulOESb" name="BasicEffectsUI.h" compile="0" resource="0"
+              file="Source/BasicEffectsUI.h"/>
+        <FILE id="t7scRK" name="DelayUI.h" compile="0" resource="0" file="Source/DelayUI.h"/>
+        <FILE id="I8d1hI" name="EffectsListUI.h" compile="0" resource="0" file="Source/EffectsListUI.h"/>
+        <FILE id="EPJyhE" name="EffectsRackUI.h" compile="0" resource="0" file="Source/EffectsRackUI.h"/>
+        <FILE id="UImnRa" name="EffectUI.h" compile="0" resource="0" file="Source/EffectUI.h"/>
+        <FILE id="lo9h9b" name="FilterUI.h" compile="0" resource="0" file="Source/FilterUI.h"/>
+        <FILE id="TN6mZW" name="ReverbUI.h" compile="0" resource="0" file="Source/ReverbUI.h"/>
+      </GROUP>
+      <GROUP id="{B1EA748F-E4FD-0333-1766-BD019CC3C47B}" name="effects">
+        <FILE id="Q8X5Qt" name="ConvolutionEffect.cpp" compile="1" resource="0"
+              file="Source/ConvolutionEffect.cpp"/>
+        <FILE id="wKVNd1" name="ConvolutionEffect.h" compile="0" resource="0"
+              file="Source/ConvolutionEffect.h"/>
+        <FILE id="gbvRg4" name="DelayEffect.cpp" compile="1" resource="0" file="Source/DelayEffect.cpp"/>
+        <FILE id="l3KIUm" name="DelayEffect.h" compile="0" resource="0" file="Source/DelayEffect.h"/>
+        <FILE id="hkcgSs" name="Effect.h" compile="0" resource="0" file="Source/Effect.h"/>
+        <FILE id="NSPEDO" name="FilterEffect.cpp" compile="1" resource="0"
+              file="Source/FilterEffect.cpp"/>
+        <FILE id="JC6jSY" name="FilterEffect.h" compile="0" resource="0" file="Source/FilterEffect.h"/>
+        <FILE id="xgv6n3" name="GainEffect.cpp" compile="1" resource="0" file="Source/GainEffect.cpp"/>
+        <FILE id="pXeUc3" name="GainEffect.h" compile="0" resource="0" file="Source/GainEffect.h"/>
+        <FILE id="VmNYVY" name="PanEffect.cpp" compile="1" resource="0" file="Source/PanEffect.cpp"/>
+        <FILE id="CZEYfX" name="PanEffect.h" compile="0" resource="0" file="Source/PanEffect.h"/>
+        <FILE id="mkzurA" name="ReverbEffect.cpp" compile="1" resource="0"
+              file="Source/ReverbEffect.cpp"/>
+        <FILE id="BMsUCd" name="ReverbEffect.h" compile="0" resource="0" file="Source/ReverbEffect.h"/>
+      </GROUP>
+      <GROUP id="{263D04E7-F163-C54E-05AF-0424DDB25B8B}" name="resources">
+        <FILE id="aapedJ" name="reverb_ir.wav" compile="0" resource="1" file="Source/resources/reverb_ir.wav"/>
+      </GROUP>
       <FILE id="bpZVHC" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="VJ8lfy" name="PluginProcessor.h" compile="0" resource="0"
             file="Source/PluginProcessor.h"/>
+      <FILE id="pI02Ev" name="EffectInfo.h" compile="0" resource="0" file="Source/EffectInfo.h"/>
       <FILE id="wdQamF" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="ZgtLTR" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
