@@ -31,7 +31,6 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
     effectsListUI.onRowMoved = [this] (int fromIndex, int toIndex)
     {
         audioProcessor.moveEffect (fromIndex, toIndex);
-		//effectsRackUI.moveEffectUI(fromIndex, toIndex);
         updateUIFromProcessor();
     };
 
@@ -54,10 +53,7 @@ void NewProjectAudioProcessorEditor::changeListenerCallback(juce::ChangeBroadcas
 //==============================================================================
 void NewProjectAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-    g.setColour (juce::Colours::white);
-    g.setFont (juce::Font (15.0f));
-    g.drawFittedText ("Input / Pan / Output / Reverb / Delay", getLocalBounds().removeFromTop(28), juce::Justification::centred, 1);
+    
 }
 
 void NewProjectAudioProcessorEditor::resized()

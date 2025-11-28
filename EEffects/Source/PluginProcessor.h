@@ -15,6 +15,52 @@
 #include "GainEffect.h"
 #include "PanEffect.h"
 #include "EffectInfo.h"
+#include "FilterEffect.h"
+
+namespace ID
+{
+    #define PARAMETER_ID(str) constexpr const char* str { #str };
+
+    PARAMETER_ID(inputGain)
+    PARAMETER_ID(outputGain)
+    PARAMETER_ID(pan)
+
+    PARAMETER_ID(reverbRoom)
+    PARAMETER_ID(reverbDamping)
+    PARAMETER_ID(reverbMix)
+    PARAMETER_ID(reverbWidth)
+    PARAMETER_ID(reverbBypass)
+
+    PARAMETER_ID(delayTimeMs)
+    PARAMETER_ID(delayFeedback)
+    PARAMETER_ID(delayMix)
+	PARAMETER_ID(delayBypass)
+
+    PARAMETER_ID(filterCutoff)
+    PARAMETER_ID(filterResonance)
+	PARAMETER_ID(filterBypass)
+
+	constexpr const char* inputGainName = "Input Gain";
+    constexpr const char* outputGainName = "Output Gain";
+    constexpr const char* panName = "Pan";
+
+    constexpr const char* reverbRoomName = "Reverb Room Size";
+    constexpr const char* reverbDampingName = "Reverb Damping";
+    constexpr const char* reverbMixName = "Reverb Mix Level";
+    constexpr const char* reverbWidthName = "Reverb Width";
+    constexpr const char* reverbBypassName = "Reverb Bypass";
+
+    constexpr const char* delayTimeMsName = "Delay Time (ms)";
+    constexpr const char* delayFeedbackName = "Delay Feedback";
+    constexpr const char* delayMixName = "Delay Mix";
+    constexpr const char* delayBypassName = "Delay Bypass";
+
+	constexpr const char* filterCutoffName = "Filter Cutoff Frequency";
+	constexpr const char* filterResonanceName = "Filter Resonance";
+	constexpr const char* filterBypassName = "Filter Bypass";
+
+    #undef PARAMETER_ID
+}
 
 //==============================================================================
 /**
@@ -90,6 +136,7 @@ private:
     PanEffect outputPan;
     ReverbEffect reverb;
     DelayEffect delay;
+    FilterEffect filter;
 
     void processEffect(juce::AudioBuffer<float>& buffer, juce::AudioBuffer<float>& tempBuffer, IEffect& effect);
     void updateParameters();

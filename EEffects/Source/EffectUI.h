@@ -131,7 +131,7 @@ private:
     struct BypassComponent : public juce::Component
     {
         BypassComponent(juce::AudioProcessorValueTreeState& vts, const juce::String& mixParameter, const juce::String& bypassParameter) 
-			: vtsRef(vts)
+			: vtsRef(vts), mixParameter(mixParameter.toStdString()), bypassParameter(bypassParameter.toStdString())
         {
             bypassButton.setColour(juce::ToggleButton::textColourId, juce::Colours::white);
             bypassButton.setWantsKeyboardFocus(false);
@@ -139,11 +139,11 @@ private:
 
             bypassAttach = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
                 vts,
-                bypassParameter,
+                this->bypassParameter,
                 bypassButton
             );
 
-			addMixControl("Mix", mixParameter);
+			if(this->mixParameter != "") addMixControl("Mix", mixParameter);
         }
 
         void addMixControl(const juce::String& labelText, const juce::String& parameterName)
@@ -176,9 +176,13 @@ private:
         {
             auto bounds = getLocalBounds();
             bypassButton.setBounds(bounds.removeFromRight(kBypassW).reduced(4));
-			mixControl.slider->setBounds(bounds.removeFromRight(kKnobSz).reduced(4));
-            mixControl.label->setBounds(mixControl.slider->getX(), mixControl.slider->getY(), mixControl.slider->getWidth(), kLabelH);
+            if (this->mixParameter != "") {
+                mixControl.slider->setBounds(bounds.removeFromRight(kKnobSz).reduced(4));
+                mixControl.label->setBounds(mixControl.slider->getX(), mixControl.slider->getY(), mixControl.slider->getWidth(), kLabelH);
+            }
+			
         }
+
     private:
         struct ControlItem
         {
@@ -192,6 +196,9 @@ private:
         ControlItem mixControl;
         std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassAttach;
         juce::AudioProcessorValueTreeState& vtsRef;
+
+        std::string mixParameter;
+        std::string bypassParameter;
     };
 
     std::unique_ptr<NameComponent> nameComponent;

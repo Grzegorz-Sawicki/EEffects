@@ -7,6 +7,7 @@
 #include "EffectUI.h"
 #include "ReverbUI.h"
 #include "DelayUI.h"
+#include "FilterUI.h"
 
 class EffectsRackUI :
     public juce::Component
@@ -20,8 +21,9 @@ public:
         viewport.setScrollBarsShown(true, true);        
         viewport.setScrollBarThickness(12);            
 
-        ownedEffectUIs["Reverb"] = std::make_unique<ReverbUI>(vts, "Reverb", "reverbWet", "reverbBypass");
-        ownedEffectUIs["Delay"]  = std::make_unique<DelayUI> (vts, "Delay",  "delayWet", "delayBypass");
+        ownedEffectUIs["Reverb"] = std::make_unique<ReverbUI>(vts, "Reverb", ID::reverbMix, ID::reverbBypass);
+        ownedEffectUIs["Delay"]  = std::make_unique<DelayUI> (vts, "Delay",  ID::delayMix, ID::delayBypass);
+        ownedEffectUIs["Filter"] = std::make_unique<FilterUI>(vts, "Filter", "", ID::filterBypass);
 
         rebuildVisibleComponents();
     }
