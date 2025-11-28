@@ -27,7 +27,8 @@ NewProjectAudioProcessor::NewProjectAudioProcessor()
        inputGain("Input Gain"),
        outputGain("Output Gain"),
        outputPan("Output Pan"),
-	   filter("Filter")
+	   filter("Filter"),
+	   convolution("Convolution")
 #endif
 {
 }
@@ -189,6 +190,7 @@ void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerB
         effects.push_back(&reverb);
         effects.push_back(&delay);
 		effects.push_back(&filter);
+		effects.push_back(&convolution);
     }
 
     syncEffectsInfo();
@@ -261,6 +263,8 @@ void NewProjectAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     }
 
 	updateParameters();
+
+	setLatencySamples(convolution.getLatency());
 
     const int numChannels = buffer.getNumChannels();
     const int numSamples  = buffer.getNumSamples();
@@ -347,6 +351,13 @@ void NewProjectAudioProcessor::updateParameters() {
         filterParams.resonance = parameters.getRawParameterValue(ID::filterResonance)->load();
         filterParams.bypass = parameters.getRawParameterValue(ID::filterBypass)->load() > 0.5f;
 		filter.setParameters(filterParams);
+    }
+
+    {
+        ConvolutionEffect::ConvolutionParameters convParams;
+        convParams.mix = parameters.getRawParameterValue(ID::convolutionMix)->load();
+        convParams.bypass = parameters.getRawParameterValue(ID::convolutionBypass)->load() > 0.5f;
+		convolution.setParameters(convParams);
     }
 }
 
@@ -544,6 +555,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout NewProjectAudioProcessor::cr
 
     params.push_back(std::make_unique<juce::AudioParameterBool>(
 		juce::ParameterID{ ID::filterBypass, 1 }, ID::filterBypassName, false));
+
+	//Convolution parameters
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ ID::convolutionMix, 1 }, ID::convolutionMixName,
+		juce::NormalisableRange<float>(0.0f, 1.0f, 0.001f), 0.5f));
+
+    params.push_back(std::make_unique<juce::AudioParameterBool>(
+        juce::ParameterID{ ID::convolutionBypass, 1 }, ID::convolutionBypassName, false));
 
     return { params.begin(), params.end() };
 }

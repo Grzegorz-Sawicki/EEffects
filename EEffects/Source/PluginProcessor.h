@@ -16,6 +16,7 @@
 #include "PanEffect.h"
 #include "EffectInfo.h"
 #include "FilterEffect.h"
+#include "ConvolutionEffect.h"
 
 namespace ID
 {
@@ -39,6 +40,9 @@ namespace ID
     PARAMETER_ID(filterCutoff)
     PARAMETER_ID(filterResonance)
 	PARAMETER_ID(filterBypass)
+    
+    PARAMETER_ID(convolutionMix)
+	PARAMETER_ID(convolutionBypass)
 
 	constexpr const char* inputGainName = "Input Gain";
     constexpr const char* outputGainName = "Output Gain";
@@ -58,6 +62,9 @@ namespace ID
 	constexpr const char* filterCutoffName = "Filter Cutoff Frequency";
 	constexpr const char* filterResonanceName = "Filter Resonance";
 	constexpr const char* filterBypassName = "Filter Bypass";
+
+	constexpr const char* convolutionMixName = "Convolution Mix";
+	constexpr const char* convolutionBypassName = "Convolution Bypass";
 
     #undef PARAMETER_ID
 }
@@ -124,7 +131,6 @@ public:
     void addChangeListener(juce::ChangeListener* listener) { changeBroadcaster.addChangeListener(listener); }
     void removeChangeListener(juce::ChangeListener* listener) { changeBroadcaster.removeChangeListener(listener); }
 
-
 private:
     const float smoothingTimeSeconds = 0.02f;
 
@@ -137,6 +143,7 @@ private:
     ReverbEffect reverb;
     DelayEffect delay;
     FilterEffect filter;
+	ConvolutionEffect convolution;
 
     void processEffect(juce::AudioBuffer<float>& buffer, juce::AudioBuffer<float>& tempBuffer, IEffect& effect);
     void updateParameters();

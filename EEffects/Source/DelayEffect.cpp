@@ -28,8 +28,10 @@ void DelayEffect::reset()
 
 void DelayEffect::process (juce::dsp::ProcessContextNonReplacing<float> context)
 {
-    if (!isActive() || parameters.bypass)
+    if (!isActive() || parameters.bypass) {
+        context.getOutputBlock().copyFrom(context.getInputBlock());
         return;
+    }
 
 	auto inputBlock = context.getInputBlock();
 	auto outputBlock = context.getOutputBlock();
