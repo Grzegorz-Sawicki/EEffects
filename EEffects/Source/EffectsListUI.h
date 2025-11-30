@@ -133,7 +133,7 @@ private:
         void resized() override
         {
             auto area = getLocalBounds();
-            auto nameArea = area.removeFromLeft(area.getWidth() / 4);
+            auto nameArea = area.removeFromLeft(area.getWidth() / 3);
             auto toggleArea = area.removeFromRight(24);
             nameLabel.setBounds(nameArea);
             toggle.setBounds(toggleArea);

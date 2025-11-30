@@ -19,7 +19,7 @@ public:
     {
         addAndMakeVisible(viewport);
         viewport.setViewedComponent(&content, false);
-        viewport.setScrollBarsShown(true, true);        
+        viewport.setScrollBarsShown(true, false);        
         viewport.setScrollBarThickness(12);            
 
         ownedEffectUIs["Reverb"] = std::make_unique<ReverbUI>(vts, "Reverb", ID::reverbMix, ID::reverbBypass);
@@ -67,7 +67,7 @@ public:
             if (it != ownedEffectUIs.end() && it->second)
             {
                 auto* comp = it->second.get();
-                comp->setBounds(0, static_cast<int>(i) * rowHeight, getWidth(), rowHeight);
+                comp->setBounds(0, static_cast<int>(i) * rowHeight, getWidth()-20, rowHeight);
             }
         }
     }

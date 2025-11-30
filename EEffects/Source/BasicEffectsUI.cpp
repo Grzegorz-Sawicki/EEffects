@@ -33,7 +33,7 @@ BasicEffectsUI::BasicEffectsUI(juce::AudioProcessorValueTreeState& vts)
 
 void BasicEffectsUI::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colours::transparentBlack);
+	g.fillAll(juce::Colours::darkgrey);
 }
 
 void BasicEffectsUI::resized()
