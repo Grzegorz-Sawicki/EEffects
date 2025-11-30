@@ -14,7 +14,7 @@ class EffectsRackUI :
     public juce::Component
 {
 public:
-    EffectsRackUI(juce::AudioProcessorValueTreeState& vts, std::vector<EffectInfo> effectsInfo)
+    EffectsRackUI(AudioProcessorEditor& editorIn, juce::AudioProcessorValueTreeState& vts, std::vector<EffectInfo> effectsInfo)
         : effectsInfo(std::move(effectsInfo))
     {
         addAndMakeVisible(viewport);
@@ -22,10 +22,10 @@ public:
         viewport.setScrollBarsShown(true, false);        
         viewport.setScrollBarThickness(12);            
 
-        ownedEffectUIs["Reverb"] = std::make_unique<ReverbUI>(vts, "Reverb", ID::reverbMix, ID::reverbBypass);
-        ownedEffectUIs["Delay"]  = std::make_unique<DelayUI> (vts, "Delay",  ID::delayMix, ID::delayBypass);
-        ownedEffectUIs["Filter"] = std::make_unique<FilterUI>(vts, "Filter", "", ID::filterBypass);
-		ownedEffectUIs["Convolution"] = std::make_unique<ConvolutionUI>(vts, "Convolution", ID::convolutionMix, ID::convolutionBypass);
+        ownedEffectUIs["Reverb"] = std::make_unique<ReverbUI>(editorIn, vts, "Reverb", ID::reverbMix, ID::reverbBypass);
+        ownedEffectUIs["Delay"]  = std::make_unique<DelayUI> (editorIn, vts, "Delay",  ID::delayMix, ID::delayBypass);
+        ownedEffectUIs["Filter"] = std::make_unique<FilterUI>(editorIn, vts, "Filter", "", ID::filterBypass);
+		ownedEffectUIs["Convolution"] = std::make_unique<ConvolutionUI>(editorIn, vts, "Convolution", ID::convolutionMix, ID::convolutionBypass);
 
         rebuildVisibleComponents();
     }

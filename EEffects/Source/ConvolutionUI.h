@@ -5,8 +5,8 @@
 class ConvolutionUI : public EffectUI
 {
 public:
-	ConvolutionUI(juce::AudioProcessorValueTreeState& vts, juce::String effectName, juce::String mixParameter, juce::String bypassParameter) :
-		EffectUI(vts, effectName, mixParameter, bypassParameter)
+	ConvolutionUI(AudioProcessorEditor& editorIn, juce::AudioProcessorValueTreeState& vts, juce::String effectName, juce::String mixParameter, juce::String bypassParameter) :
+		EffectUI(editorIn, vts, effectName, mixParameter, bypassParameter)
 	{
 
 	}

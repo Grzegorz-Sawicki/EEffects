@@ -16,7 +16,7 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
       audioProcessor (p),
       basicEffectsUI(p.parameters),
 	  effectsListUI(audioProcessor.getEffectsInfo()),
-	  effectsRackUI(p.parameters, audioProcessor.getEffectsInfo())
+	  effectsRackUI(*this, p.parameters, audioProcessor.getEffectsInfo())
 {
     addAndMakeVisible(effectsListUI);
     addAndMakeVisible(effectsRackUI);

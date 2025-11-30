@@ -7,12 +7,12 @@
 class EffectUI : public juce::Component
 {
 public:
-    EffectUI(juce::AudioProcessorValueTreeState& vts, juce::String effectName, juce::String mixParameter, juce::String bypassParameter) noexcept
+    EffectUI(AudioProcessorEditor& editorIn, juce::AudioProcessorValueTreeState& vts, juce::String effectName, juce::String mixParameter, juce::String bypassParameter) noexcept
         : parameters(vts)
     {
         nameComponent = std::make_unique<NameComponent>(effectName);
-        controlsComponent = std::make_unique<ControlsComponent>(parameters);
-        bypassComponent = std::make_unique<BypassComponent>(parameters, mixParameter, bypassParameter);
+        controlsComponent = std::make_unique<ControlsComponent>(editorIn, parameters);
+        bypassComponent = std::make_unique<BypassComponent>(editorIn, parameters, mixParameter, bypassParameter);
 
         //setSize(kComponentW, kComponentH);
 
@@ -40,6 +40,45 @@ public:
     {
         controlsComponent->addControl(labelText, parameterName);
     }
+
+    struct SliderTest : public juce::Slider
+    {
+        SliderTest(AudioProcessorEditor& editorIn, juce::AudioProcessorValueTreeState& vts, juce::String paramId)
+            : editor(editorIn), vtsRef(vts), paramId(paramId)
+        {
+        }
+
+        void mouseUp(const juce::MouseEvent& e) override
+        {
+            if (e.mods.isRightButtonDown())
+            {
+                if (auto* c = editor.getHostContext())
+                {
+                    if (auto menuInfo = c->getContextMenuForParameter(vtsRef.getParameter(paramId)))
+                    {
+                        menuInfo->getEquivalentPopupMenu().showMenuAsync(PopupMenu::Options().withTargetComponent(this)
+                            .withMousePosition());
+                        DBG("Showing context menu for parameter: " + paramId);
+                    }
+                }
+            }
+        }
+
+        juce::String paramId;
+        juce::AudioProcessorValueTreeState& vtsRef;
+        juce::AudioProcessorEditor& editor;
+    };
+
+    struct ControlItem : public juce::Component
+    {
+        ControlItem() {}
+
+        std::unique_ptr<SliderTest> slider;
+        std::unique_ptr<juce::Label> label;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attachment;
+
+        juce::String paramId;
+    };
 
 protected:
     juce::AudioProcessorValueTreeState& parameters;
@@ -73,12 +112,12 @@ private:
 
     struct ControlsComponent : public juce::Component
     {
-        ControlsComponent(juce::AudioProcessorValueTreeState& vts)
-            : vtsRef(vts) {}
+        ControlsComponent(AudioProcessorEditor& editorIn, juce::AudioProcessorValueTreeState& vts)
+            : editor(editorIn), vtsRef(vts) {}
 
         void addControl(const juce::String& labelText, const juce::String& parameterName)
         {
-            auto slider = std::make_unique<juce::Slider>();
+            auto slider = std::make_unique<SliderTest>(editor, vtsRef, parameterName);
             slider->setSliderStyle(juce::Slider::RotaryVerticalDrag);
             slider->setTextBoxStyle(juce::Slider::TextBoxBelow, true, 60, 20);
             slider->setWantsKeyboardFocus(false);
@@ -90,15 +129,15 @@ private:
             using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
             auto attachment = std::make_unique<SliderAttachment>(vtsRef, parameterName, *slider);
 
-            controls.emplace_back();
-            auto& item = controls.back();
-            item.slider = std::move(slider);
-            item.label = std::move(label);
-            item.attachment = std::move(attachment);
-            item.paramId = parameterName;
+            auto item = std::make_unique<ControlItem>();
+            item->slider = std::move(slider);
+            item->label = std::move(label);
+            item->attachment = std::move(attachment);
 
-            addAndMakeVisible(*item.slider);
-            addAndMakeVisible(*item.label);
+			addAndMakeVisible(*item->slider);
+			addAndMakeVisible(*item->label);
+
+            controls.emplace_back(std::move(item));
 
             resized();
         }
@@ -106,32 +145,24 @@ private:
         void resized() override
         {
             auto bounds = getLocalBounds();
-            for each (auto& item in controls)
+            for (auto& itemPtr : controls)
             {
-                item.slider->setBounds(bounds.removeFromLeft(kKnobSz).reduced(4));
-                item.label->setBounds(item.slider->getX(), item.slider->getY(), item.slider->getWidth(), kLabelH);
-			}
-
-            
+                if (! itemPtr) continue;
+                itemPtr->slider->setBounds(bounds.removeFromLeft(kKnobSz).reduced(4));
+                itemPtr->label->setBounds(itemPtr->slider->getX(), itemPtr->slider->getY(), itemPtr->slider->getWidth(), kLabelH);
+            }
         }
 
     private:
-        struct ControlItem
-        {
-            std::unique_ptr<juce::Slider> slider;
-            std::unique_ptr<juce::Label> label;
-            std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attachment;
-            juce::String paramId;
-        };
-
         juce::AudioProcessorValueTreeState& vtsRef;
-        std::vector<ControlItem> controls;
+        juce::AudioProcessorEditor& editor;
+        std::vector<std::unique_ptr<ControlItem>> controls;
     };
 
     struct BypassComponent : public juce::Component
     {
-        BypassComponent(juce::AudioProcessorValueTreeState& vts, const juce::String& mixParameter, const juce::String& bypassParameter) 
-			: vtsRef(vts), mixParameter(mixParameter.toStdString()), bypassParameter(bypassParameter.toStdString())
+        BypassComponent(AudioProcessorEditor& editorIn, juce::AudioProcessorValueTreeState& vts, const juce::String& mixParameter, const juce::String& bypassParameter)
+            : editor(editorIn), vtsRef(vts), mixParameter(mixParameter.toStdString()), bypassParameter(bypassParameter.toStdString())
         {
             bypassButton.setColour(juce::ToggleButton::textColourId, juce::Colours::white);
             bypassButton.setWantsKeyboardFocus(false);
@@ -143,12 +174,12 @@ private:
                 bypassButton
             );
 
-			if(this->mixParameter != "") addMixControl("Mix", mixParameter);
+            if(this->mixParameter != "") addMixControl("Mix", mixParameter);
         }
 
         void addMixControl(const juce::String& labelText, const juce::String& parameterName)
         {
-            auto slider = std::make_unique<juce::Slider>();
+            auto slider = std::make_unique<SliderTest>(editor, vtsRef, parameterName);
             slider->setSliderStyle(juce::Slider::RotaryVerticalDrag);
             slider->setTextBoxStyle(juce::Slider::TextBoxBelow, true, 60, 20);
             slider->setWantsKeyboardFocus(false);
@@ -160,7 +191,6 @@ private:
             using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
             auto attachment = std::make_unique<SliderAttachment>(vtsRef, parameterName, *slider);
 
-			mixControl = ControlItem{};
             mixControl.slider = std::move(slider);
             mixControl.label = std::move(label);
             mixControl.attachment = std::move(attachment);
@@ -180,22 +210,14 @@ private:
                 mixControl.slider->setBounds(bounds.removeFromRight(kKnobSz).reduced(4));
                 mixControl.label->setBounds(mixControl.slider->getX(), mixControl.slider->getY(), mixControl.slider->getWidth(), kLabelH);
             }
-			
         }
 
     private:
-        struct ControlItem
-        {
-            std::unique_ptr<juce::Slider> slider;
-            std::unique_ptr<juce::Label> label;
-            std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attachment;
-            juce::String paramId;
-        };
-
         juce::ToggleButton bypassButton;
         ControlItem mixControl;
         std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassAttach;
         juce::AudioProcessorValueTreeState& vtsRef;
+		juce::AudioProcessorEditor& editor;
 
         std::string mixParameter;
         std::string bypassParameter;

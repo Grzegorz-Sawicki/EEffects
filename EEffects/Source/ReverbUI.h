@@ -5,8 +5,8 @@
 class ReverbUI : public EffectUI
 {
 public:
-	ReverbUI(juce::AudioProcessorValueTreeState& vts, juce::String effectName, juce::String mixParameter, juce::String bypassParameter) :
-		EffectUI(vts, effectName, mixParameter, bypassParameter)
+	ReverbUI(AudioProcessorEditor& editorIn, juce::AudioProcessorValueTreeState& vts, juce::String effectName, juce::String mixParameter, juce::String bypassParameter) :
+		EffectUI(editorIn, vts, effectName, mixParameter, bypassParameter)
 	{
 		this->addControl("Room", ID::reverbRoom);
 		this->addControl("Damp", ID::reverbDamping);
